@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Build", "build\Build.csproj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Installer", "install\Installer.csproj", "{41EFCA73-F289-4AFB-B894-157BBD2E795F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FabSettingsV2", "source\SearchFabServicesDialog\FabSettingsV2.csproj", "{9E41E886-4E80-4EF1-897C-17B3241B4205}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CODE.Free", "source\SearchFabServicesDialog\CODE.Free.csproj", "{9E41E886-4E80-4EF1-897C-17B3241B4205}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

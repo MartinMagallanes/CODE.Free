@@ -12,7 +12,7 @@ namespace CODE.Free
     {
         public override void Execute()
         {
-            CODE.Free.Application.OverrideFabConfigDialog();
+            //CODE.Free.Application.OverrideFabConfigDialog();
         }
     }
 }

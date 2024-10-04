@@ -1,7 +1,7 @@
 ﻿<RevitAddIns>
     <AddIn Type="Application">
-        <Name>FabSettingsV2</Name>
-        <Assembly>FabSettingsV2/FabSettingsV2.dll</Assembly>
+        <Name>CODE.Free</Name>
+        <Assembly>CODE.Free/CODE.Free.dll</Assembly>
         <AddInId>447D9A2C-5447-4AD3-8C9F-69815835B821</AddInId>
         <FullClassName>CODE.Free.Application</FullClassName>
         <VendorId>Development</VendorId>

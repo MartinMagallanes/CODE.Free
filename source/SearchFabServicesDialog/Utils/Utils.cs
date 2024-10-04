@@ -5,6 +5,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Media;
 using System.Windows;
 using System.Reflection;
+using Color = Autodesk.Revit.DB.Color;
 
 namespace CODE.Free
 {
@@ -107,6 +108,31 @@ namespace CODE.Free
                 }
             }
             return null;
+        }
+        public static FillPatternElement GetSolidPattern(this Document doc)
+        {
+            return new FilteredElementCollector(doc).OfClass(typeof(FillPatternElement)).Cast<FillPatternElement>().FirstOrDefault(x => x.GetFillPattern().IsSolidFill);
+        }
+        public static OverrideGraphicSettings SetColorInView(this ICollection<ElementId> ids, View view, Color surfaceColor, Color lineColor)
+        {
+            FillPatternElement pattern = view.Document.GetSolidPattern();
+            OverrideGraphicSettings ogs = new OverrideGraphicSettings();
+            if (surfaceColor != null)
+            {
+                ogs.SetSurfaceForegroundPatternColor(surfaceColor);
+                ogs.SetSurfaceForegroundPatternVisible(true);
+                ogs.SetSurfaceForegroundPatternId(pattern.Id);
+            }
+            if (lineColor != null)
+            {
+                ogs.SetProjectionLineColor(lineColor);
+                ogs.SetProjectionLinePatternId(LinePatternElement.GetSolidPatternId());
+            }
+            foreach (ElementId id in ids)
+            {
+                view.SetElementOverrides(id, ogs);
+            }
+            return ogs;
         }
     }
     public static class UI

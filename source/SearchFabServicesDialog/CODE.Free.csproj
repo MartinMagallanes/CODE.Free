@@ -5,7 +5,7 @@
         <LangVersion>latest</LangVersion>
         <PlatformTarget>x64</PlatformTarget>
         <ImplicitUsings>true</ImplicitUsings>
-        <PublishAddinFiles>false</PublishAddinFiles>
+        <PublishAddinFiles>true</PublishAddinFiles>
 		<GenerateDependencyFile>false</GenerateDependencyFile>
 		<Configurations>Release R21;Release R22;Release R23;Release R24;Release R25</Configurations>
         <Configurations>$(Configurations);Release R20;Release R21;Release R22;Release R23;Release R24;Release R25</Configurations>
@@ -45,6 +45,12 @@
 
     <ItemGroup>
       <None Remove="Resources\Icons\Code Icon.ico" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="Resources\Icons\Code Icon.ico">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>
@@ -88,9 +94,18 @@
 	</ItemGroup>
 
     <ItemGroup>
-        <Resource Include="Resources\Icons\Code Icon.ico" />
-        <Resource Include="Resources\Icons\RibbonIcon16.png" />
-        <Resource Include="Resources\Icons\RibbonIcon32.png" />
+      <Compile Update="Properties\Settings.Designer.cs">
+        <DesignTimeSharedInput>True</DesignTimeSharedInput>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>Settings.settings</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Properties\Settings.settings">
+        <Generator>SettingsSingleFileGenerator</Generator>
+        <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+      </None>
     </ItemGroup>
 
 </Project>

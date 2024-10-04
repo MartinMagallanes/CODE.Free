@@ -3,8 +3,10 @@ using Autodesk.Revit.UI.Events;
 using Autodesk.UI.Windows.Controls;
 using FabricationPartBrowser;
 using FabricationPartBrowser.Modules;
+using FabricationPartBrowser.ViewModels;
 using FabSettings;
 using Nice3point.Revit.Toolkit.External;
+using System.ComponentModel;
 using System.IO;
 using System.Reflection;
 using System.Windows;
@@ -19,66 +21,96 @@ using TextBox = System.Windows.Controls.TextBox;
 
 namespace CODE.Free
 {
-    /// <summary>
-    ///     Application entry point
-    /// </summary>
     [UsedImplicitly]
     public class Application : ExternalApplication
     {
         public override void OnStartup()
         {
             OverrideFabConfigDialog();
-            //CreateRibbon();
-
-            //Application.DialogBoxShowing += Application_DialogBoxShowing;
-            //Application.FabricationPartBrowserChanged += Application_FabricationPartBrowserChanged;
         }
-        private void CreateRibbon()
+        void B_CanExecute(object obj, CanExecuteEventArgs avgs)
         {
-            var panel = Application.CreatePanel("CADmep", "CODE");
-
-            panel.AddPushButton<FabSettingsV2>("Execute")
-                .SetImage("/SearchFabServicesDialog;component/Resources/Icons/RibbonIcon16.png")
-                .SetLargeImage("/SearchFabServicesDialog;component/Resources/Icons/RibbonIcon32.png");
+            if (avgs.ActiveDocument == null || !avgs.ActiveDocument.Application.IsMechanicalAnalysisEnabled || avgs.ActiveDocument.IsModifiable)
+                avgs.CanExecute = false;
+            else
+                avgs.CanExecute = true;
         }
-
-        private static void Application_FabricationPartBrowserChanged(object sender, FabricationPartBrowserChangedEventArgs e)
+        void B_Executed(object sender, ExecutedEventArgs e)
         {
-            //MessageBox.Show(e.Operation.ToString());
+            try
+            {
+                OnButtonSettingsClick();
+            }
+            catch (Exception ex)
+            {
+                TaskDialog.Show("Error: FabSettingsV2", $"B_Executed():\n{ex.GetType()}: {ex.Message}");
+            }
         }
-
-        private static void Application_DialogBoxShowing(object sender, DialogBoxShowingEventArgs e)
-        {
-            //UI.Test(2);
-            //UI.Test(e.DialogId);
-            //MessageBox.Show(e.DialogId);
-        }
-        public static void RegisterEvents()
-        {
-            Context.UiApplication.DialogBoxShowing -= Application_DialogBoxShowing;
-            Context.UiApplication.DialogBoxShowing += Application_DialogBoxShowing;
-            Context.UiApplication.FabricationPartBrowserChanged -= Application_FabricationPartBrowserChanged;
-            Context.UiApplication.FabricationPartBrowserChanged += Application_FabricationPartBrowserChanged;
-        }
-
-
         const string _search = "Search";
         const string _toolTip = "Enter text to filter services list";
         const string _isConnected = "IsConfigConnectedToSource";
         const string _unloadedServices = "UnloadedServicesListView";
         const string _loadedServices = "LoadedServicesListView";
         const string _addButton = "Add";
-        const string _searchBox = "SearchTextBox";
-        public static void OverrideFabConfigDialog()
+        public static bool FabSettingsAutoReload = false;
+        public static CheckBox reloadCheckBox = null;
+        void OverrideFabConfigDialog()
         {
-
+            FabSettingsAutoReload = CODE.Free.Properties.Settings.Default.FabSettingsAutoReload;
             try
             {
+                RevitCommandId cmd = RevitCommandId.LookupCommandId("ID_MEP_FABRICATION_SETTINGS");
+                if (cmd != null)
+                {
+                    try
+                    {
+                        UiApplication.RemoveAddInCommandBinding(cmd);
+                    }
+                    catch (Autodesk.Revit.Exceptions.InvalidOperationException)
+                    {
+
+                    }
+                    AddInCommandBinding b = UiApplication.CreateAddInCommandBinding(cmd);
+                    if (b != null)
+                    {
+                        b.CanExecute += new EventHandler<CanExecuteEventArgs>(B_CanExecute);
+                        b.Executed += new EventHandler<ExecutedEventArgs>(B_Executed);
+                    }
+                }
 
                 FabPartBrowserPage page = typeof(FabPartUtility).GetPrivateMember("FabBrowserPage") as FabPartBrowserPage;
                 Button settings = page.FindName("Settings") as Button;
                 settings.Content = $"Settings...";
-                //settings.Content = $"Settings {DateTime.Now.Second}";
+                DockPanel panel = settings.Parent as DockPanel;
+                panel.Children.Remove(settings);
+                reloadCheckBox = new CheckBox()
+                {
+                    Content = "Reload on Open",
+                    ToolTip = "Automatically Reload Configuration when this dialog is opened",
+                    Margin = new Thickness(0, 0, 6, 0),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    IsChecked = FabSettingsAutoReload,
+                };
+                ToolTipService.SetInitialShowDelay(reloadCheckBox, 200);
+                Grid newGrid = new Grid();
+                newGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto});
+                newGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto});
+                newGrid.Children.Add(settings);
+                newGrid.Children.Add(reloadCheckBox);
+                Grid.SetColumn(reloadCheckBox, 0);
+                Grid.SetColumn(settings, 1);
+                panel.Children.Insert(panel.Children.Count - 1, newGrid);
+                DockPanel.SetDock(newGrid, Dock.Right);
+                reloadCheckBox.Checked += (s, e) =>
+                {
+                    FabSettingsAutoReload = true;
+                    SaveFabSettingsAutoReload();
+                };
+                reloadCheckBox.Unchecked += (s, e) =>
+                {
+                    FabSettingsAutoReload = false;
+                    SaveFabSettingsAutoReload();
+                };
                 RemoveRoutedEventHandlers(settings, Button.ClickEvent);
                 settings.Click += Settings_Click;
             }
@@ -87,26 +119,20 @@ namespace CODE.Free
                 UI.Test(ex.Message);
             }
         }
-        private static void Settings_Click(object sender, RoutedEventArgs e)
+        static void SaveFabSettingsAutoReload()
+        {
+            CODE.Free.Properties.Settings.Default.FabSettingsAutoReload = FabSettingsAutoReload;
+            CODE.Free.Properties.Settings.Default.Save();
+        }
+        static void Settings_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                OnButtonSettingsCLick();
+                OnButtonSettingsClick();
             }
             catch (Exception ex)
             {
                 UI.Test(ex.Message);
-            }
-        }
-        public static BitmapSource GetImageFromPath(string path)
-        {
-            try
-            {
-                return new BitmapImage(new Uri(path));
-            }
-            catch
-            {
-                return null;
             }
         }
         public static BitmapSource GetEmbeddedImage(Assembly assem, string name)
@@ -121,7 +147,7 @@ namespace CODE.Free
                 return null;
             }
         }
-        public static void OnButtonSettingsCLick()
+        public static void OnButtonSettingsClick()
         {
             if (!ServiceButtonBase.CanTakeoff)
                 return;
@@ -157,7 +183,6 @@ namespace CODE.Free
                     return wnd;
                 }
             }
-
             return null;
         }
         public class UpdateFabSettings : IExternalEventWorker
@@ -168,13 +193,14 @@ namespace CODE.Free
             TreeView treeLoadedServices = null;
             TextBox textBox = null;
             TextBox textBox2 = null;
+            CheckBox checkBox = null;
             CollectionViewSource cvs = null;
             CollectionViewSource cvs2 = null;
-            Grid g = null;
+            Grid mainGrid = null;
             FabSettingsDialog _fabSettingsDialog = null;
             FabricationConfigurationUserControl _configControl = null;
             public string GetName() => nameof(UpdateFabSettings);
-            public string GetDescription() => "Update Fabrication Settings Dialog.";
+            public string GetDescription() => "Upgrade Fabrication Settings Dialog.";
             public void Execute(UIApplication revitApp)
             {
                 _fabSettingsDialog = null;
@@ -182,6 +208,7 @@ namespace CODE.Free
                 {
                     _fabSettingsDialog = new FabSettingsDialog(GlobalInfo.CurrentDoc);
                     _fabSettingsDialog.Activated += _fabSettingsDialog_Activated;
+                    _fabSettingsDialog.Closing += _updateAutoReload;
                     _fabSettingsDialog.SetParent(revitApp.MainWindowHandle);
                     _fabSettingsDialog.ShowDialog();
                 }
@@ -198,17 +225,53 @@ namespace CODE.Free
                     throw ex;
                 }
             }
-            private void _fabSettingsDialog_Activated(object sender, EventArgs e)
+            private void OnClosing(object sender, CancelEventArgs e)
+            {
+                if (!ViewModelStore.Instance.ConfigurationsViewModel.CanClose)
+                {
+                    e.Cancel = true;
+                    return;
+                }
+                ViewModelStore.Instance.SettingsViewModel.HandleDialogClose();
+            }
+            private void _updateAutoReload(object sender, CancelEventArgs e)
+            {
+                if (checkBox != null)
+                {
+                    CODE.Free.Application.FabSettingsAutoReload = checkBox.IsChecked ?? false;
+                }
+                reloadCheckBox.IsChecked = CODE.Free.Application.FabSettingsAutoReload;
+                SaveFabSettingsAutoReload();
+            }
+            void _fabSettingsDialog_Activated(object sender, EventArgs e)
             {
                 _fabSettingsDialog.Activated -= _fabSettingsDialog_Activated;
                 _configControl = typeof(FabPartUtility).GetPrivateMember("FabConfigControl") as FabricationConfigurationUserControl;
                 if (_configControl != null)
                 {
                     Button sync = _configControl.FindName("Sync") as Button;
-                    FabPartUtility.SimulateButtonClick(sync);
-                    //_fabSettingsDialog.Icon = new BitmapImage(new Uri("/SearchFabServicesDialog;component/Resources/Icons/RibbonIcon16.png"));
-                    _fabSettingsDialog.Icon = GetImageFromPath(@"B:\04-OC\02-Plugins\99-Resources\Icons\CODE16x.png");
-                    UI.Popup("fix this icon path");
+                    Grid syncGrid = sync.Parent as Grid;
+                    if (syncGrid != null)
+                    {
+                        checkBox = new CheckBox()
+                        {
+                            Content = "Reload on Open",
+                            Margin = new Thickness(15, 4, 4, 4),
+                            ToolTip = "Automatically Reload Configuration when this dialog is opened",
+                            IsChecked = CODE.Free.Application.FabSettingsAutoReload,
+                        };
+                        syncGrid.RowDefinitions.Insert(0, new RowDefinition() { Height = GridLength.Auto });
+                        syncGrid.RowDefinitions.Insert(1, new RowDefinition() { Height = GridLength.Auto });
+                        syncGrid.Children.Add(checkBox);
+                        Grid.SetRow(checkBox, 1);
+                        Grid.SetColumn(checkBox, 0);
+                        ToolTipService.SetInitialShowDelay(checkBox, 200);
+                    }
+                    if (CODE.Free.Application.FabSettingsAutoReload)
+                    {
+                        FabPartUtility.SimulateButtonClick(sync);
+                    }
+                    _fabSettingsDialog.Icon = GetEmbeddedImage(Assembly.GetExecutingAssembly(), "CODE.Free.Resources.Icons.Code Icon.ico");
                     textBox = new SearchTextBox()
                     {
                         LabelText = _search,
@@ -232,30 +295,24 @@ namespace CODE.Free
                     _configControl.LayoutUpdated += _configControl_LayoutUpdated;
                 }
             }
-            private void _configControl_LayoutUpdated(object sender, EventArgs e)
+            void _configControl_LayoutUpdated(object sender, EventArgs e)
             {
                 unloadedServices = _configControl.FindName(_unloadedServices) as ListView;
                 if (unloadedServices != null && unloadedServices.Visibility == System.Windows.Visibility.Visible)
                 {
                     _configControl.LayoutUpdated -= _configControl_LayoutUpdated;
                     loadedServices = _configControl.FindName(_loadedServices) as ListView;
-                    g = VisualTreeHelper.GetParent(unloadedServices) as Grid;
+                    mainGrid = VisualTreeHelper.GetParent(unloadedServices) as Grid;
                     Button btn = _configControl.FindName(_addButton) as Button;
                     TabControl tabs = _configControl.FindName("ContentTabControl") as TabControl;
-                    //tabs.Items.Insert(2, new ItemFoldersUserControl(FabricationConfiguration.GetFabricationConfiguration(Context.Document)));
-                    //TabItem tab = new TabItem();
-                    //tab.Header = "Families";
-                    ////tab.Content = new Image() { Source = GetImageFromPath(@"B:\04-OC\00-Admin\Media\LI Post\z-Steven\2024-07-14_22-21-37.png") };
-                    //tab.Content = new ItemFoldersUserControl(FabricationConfiguration.GetFabricationConfiguration(Context.Document));
-                    //tabs.Items.Insert(2, tab);
-                    g.RowDefinitions.Insert(1, new RowDefinition() { Height = GridLength.Auto });
+                    mainGrid.RowDefinitions.Insert(1, new RowDefinition() { Height = GridLength.Auto });
                     Grid.SetRow(unloadedServices, 2);
                     Grid.SetRow(loadedServices, 2);
                     Grid.SetRow(btn.Parent as Grid, 2);
-                    g.Children.Add(textBox);
+                    mainGrid.Children.Add(textBox);
                     Grid.SetRow(textBox, 1);
                     Grid.SetColumn(textBox, 0);
-                    g.Children.Add(textBox2);
+                    mainGrid.Children.Add(textBox2);
                     Grid.SetRow(textBox2, 1);
                     Grid.SetColumn(textBox2, 2);
 
@@ -269,7 +326,6 @@ namespace CODE.Free
                     Trigger tr2 = new Trigger();
                     tr2.Value = true;
                     tr2.Property = GridSplitter.IsDraggingProperty;
-                    //tr2.Setters.Add(new Setter(GridSplitter.BackgroundProperty, Brushes.Red));
                     tr2.Setters.Add(new Setter(GridSplitter.WidthProperty, 1.0));
                     tr2.Setters.Add(new Setter(GridSplitter.BorderThicknessProperty, new Thickness(0)));
                     tr2.Setters.Add(new Setter(GridSplitter.MarginProperty, new Thickness(0)));
@@ -287,7 +343,9 @@ namespace CODE.Free
                         BorderThickness = new Thickness(4, 0, 8, 0),
                         ShowsPreview = true,
                         Margin = new Thickness(0, 0, 0, 15),
+                        ToolTip = "Double-click to reset",
                     };
+                    ToolTipService.SetInitialShowDelay(splitter, 200);
                     splitter.MouseDoubleClick += Splitter_MouseDoubleClick;
                     GridSplitter splitter2 = new GridSplitter()
                     {
@@ -301,49 +359,29 @@ namespace CODE.Free
                         ResizeBehavior = GridResizeBehavior.PreviousAndNext,
                         ShowsPreview = true,
                         Margin = new Thickness(0, 0, 0, 15),
+                        ToolTip = "Double-click to reset",
                     };
+                    ToolTipService.SetInitialShowDelay(splitter2, 200);
                     splitter2.MouseDoubleClick += Splitter_MouseDoubleClick;
-                    g.Children.Add(splitter);
-                    g.Children.Add(splitter2);
+                    mainGrid.Children.Add(splitter);
+                    mainGrid.Children.Add(splitter2);
                     Grid.SetRow(splitter, 2);
                     Grid.SetRow(splitter2, 2);
                     Grid.SetColumn(splitter, 1);
                     Grid.SetColumn(splitter2, 1);
-                    //g.ColumnDefinitions[1].MinWidth = 40;
-                    //g.ColumnDefinitions[1].MaxWidth = 40;
-                    //treeUnloadedServices = new ServicesTreeView(unloadedServices.ItemsSource)
-                    //{
-                    //    DataContext = _configControl.DataContext,
-                    //};
-                    //treeLoadedServices = new ServicesTreeView(loadedServices.ItemsSource)
-                    //{
-                    //    DataContext = _configControl.DataContext,
-                    //};
-                    //g.Children.Add(treeUnloadedServices);
-                    //g.Children.Add(treeLoadedServices);
-                    //Grid.SetColumn(treeUnloadedServices, Grid.GetColumn(unloadedServices));
-                    //Grid.SetColumn(treeLoadedServices, Grid.GetColumn(loadedServices));
-                    //Grid.SetRow(treeUnloadedServices, Grid.GetRow(unloadedServices));
-                    //Grid.SetRow(treeLoadedServices, Grid.GetRow(loadedServices));
-                    //loadedServices.Visibility = Visibility.Hidden;
-                    //unloadedServices.Visibility = Visibility.Hidden;
 
-                    //CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(treeUnloadedServices.ItemsSource);
                     CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(unloadedServices.ItemsSource);
                     view.Filter = Filter;
-                    //CollectionView view2 = (CollectionView)CollectionViewSource.GetDefaultView(treeLoadedServices.ItemsSource);
                     CollectionView view2 = (CollectionView)CollectionViewSource.GetDefaultView(loadedServices.ItemsSource);
                     view2.Filter = Filter2;
                 }
             }
-
-            private void Splitter_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+            void Splitter_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
             {
-                g.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
-                g.ColumnDefinitions[2].Width = new GridLength(1, GridUnitType.Star);
+                mainGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+                mainGrid.ColumnDefinitions[2].Width = new GridLength(1, GridUnitType.Star);
             }
-
-            private void Tb_TextChanged(object sender, TextChangedEventArgs e)
+            void Tb_TextChanged(object sender, TextChangedEventArgs e)
             {
                 CollectionViewSource.GetDefaultView(unloadedServices.ItemsSource).Refresh();
                 CollectionViewSource.GetDefaultView(loadedServices.ItemsSource).Refresh();
@@ -369,7 +407,7 @@ namespace CODE.Free
 
             public ItemFoldersTreeView() => this.SelectedItemChanged += new RoutedPropertyChangedEventHandler<object>(this.SelectedTreeViewItemChanged);
 
-            private void SelectedTreeViewItemChanged(
+            void SelectedTreeViewItemChanged(
               object sender,
               RoutedPropertyChangedEventArgs<object> e)
             {
