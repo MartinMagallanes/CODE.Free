@@ -217,13 +217,9 @@ namespace CODE.Free
         {
             ListView unloadedServices = null;
             ListView loadedServices = null;
-            TreeView treeUnloadedServices = null;
-            TreeView treeLoadedServices = null;
             TextBox textBox = null;
             TextBox textBox2 = null;
             CheckBox checkBox = null;
-            CollectionViewSource cvs = null;
-            CollectionViewSource cvs2 = null;
             Grid mainGrid = null;
             FabSettingsDialog _fabSettingsDialog = null;
             FabricationConfigurationUserControl _configControl = null;
@@ -253,15 +249,15 @@ namespace CODE.Free
                     throw ex;
                 }
             }
-            private void OnClosing(object sender, CancelEventArgs e)
-            {
-                if (!ViewModelStore.Instance.ConfigurationsViewModel.CanClose)
-                {
-                    e.Cancel = true;
-                    return;
-                }
-                ViewModelStore.Instance.SettingsViewModel.HandleDialogClose();
-            }
+            //private void OnClosing(object sender, CancelEventArgs e)
+            //{
+            //    if (!ViewModelStore.Instance.ConfigurationsViewModel.CanClose)
+            //    {
+            //        e.Cancel = true;
+            //        return;
+            //    }
+            //    ViewModelStore.Instance.SettingsViewModel.HandleDialogClose();
+            //}
             private void _updateAutoReload(object sender, CancelEventArgs e)
             {
                 if (checkBox != null)

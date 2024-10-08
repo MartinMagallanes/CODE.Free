@@ -5,10 +5,10 @@ using WixSharp.CommonTasks;
 using WixSharp.Controls;
 using Assembly = System.Reflection.Assembly;
 
-//const string outputName = "CODE.Free";
-const string outputName = "Fab Settings V2";
-//const string projectName = "CODE.Free";
-const string projectName = "Fab Settings V2";
+const string outputName = "CODE.Free";
+//const string outputName = "Fab Settings V2";
+const string projectName = "CODE.Free";
+//const string projectName = "Fab Settings V2";
 
 var project = new Project
 {

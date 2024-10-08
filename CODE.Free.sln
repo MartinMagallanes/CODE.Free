@@ -51,8 +51,8 @@ Global
 		{9E41E886-4E80-4EF1-897C-17B3241B4205}.Release R23|Any CPU.Build.0 = Release R23|Any CPU
 		{9E41E886-4E80-4EF1-897C-17B3241B4205}.Release R24|Any CPU.ActiveCfg = Release R24|Any CPU
 		{9E41E886-4E80-4EF1-897C-17B3241B4205}.Release R24|Any CPU.Build.0 = Release R24|Any CPU
-		{9E41E886-4E80-4EF1-897C-17B3241B4205}.Release R25|Any CPU.ActiveCfg = Release R24|Any CPU
-		{9E41E886-4E80-4EF1-897C-17B3241B4205}.Release R25|Any CPU.Build.0 = Release R24|Any CPU
+		{9E41E886-4E80-4EF1-897C-17B3241B4205}.Release R25|Any CPU.ActiveCfg = Release R25|Any CPU
+		{9E41E886-4E80-4EF1-897C-17B3241B4205}.Release R25|Any CPU.Build.0 = Release R25|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -13,12 +13,12 @@
 
         Bundles =
         [
-            Solution.FabSettingsV2,
+            Solution.CODE_Free,
         ];
 
         InstallersMap = new()
         {
-            {Solution.Installer, Solution.FabSettingsV2},
+            {Solution.Installer, Solution.CODE_Free},
         };
     }
 }
