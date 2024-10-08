@@ -8,7 +8,10 @@ using FabSettings;
 using Nice3point.Revit.Toolkit.External;
 using System.ComponentModel;
 using System.IO;
+using System.Net;
+using System.Net.Http;
 using System.Reflection;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -24,9 +27,35 @@ namespace CODE.Free
     [UsedImplicitly]
     public class Application : ExternalApplication
     {
+        string _hello => "https://licensing.contentorigin.dev/api/Hello";
+        string _goodbye => "https://licensing.contentorigin.dev/api/Hello/goodbye";
         public override void OnStartup()
         {
+            HttpClient client = new HttpClient();
+            HttpResponseMessage result = client.PostAsync(_hello, new StringContent(Serialize(Context.Application.LoginUserId, "CODE.Free"), Encoding.UTF8, "application/json")).Result;
+            if (!result.IsSuccessStatusCode)
+            {
+                UI.Popup($"Failed to connect to the licensing server. Email the following error to mmagallanes@contentorigin.dev.\nReason: {result.ReasonPhrase}");
+                return;
+            }
             OverrideFabConfigDialog();
+        }
+        public override void OnShutdown()
+        {
+            HttpClient client = new HttpClient();
+            HttpResponseMessage result = client.PostAsync(_goodbye, new StringContent(Serialize(Context.Application.LoginUserId, "CODE.Free"), Encoding.UTF8, "application/json")).Result;
+            if (!result.IsSuccessStatusCode)
+            {
+                UI.Popup($"Failed to connect to the licensing server. Email the following error to mmagallanes@contentorigin.dev.\nReason: {result.ReasonPhrase}");
+            }
+            base.OnShutdown();
+        }
+        string Serialize(string loginUserId, string productId)
+        {
+            return
+            $"{{\"AutodeskUsername\":\"{loginUserId}\"," +
+            $"\"ProductIds\":[\"{productId}\"]," +
+            $"\"ActiveProductIds\":[\"{productId}\"]}}";
         }
         void B_CanExecute(object obj, CanExecuteEventArgs avgs)
         {
@@ -77,7 +106,6 @@ namespace CODE.Free
                         b.Executed += new EventHandler<ExecutedEventArgs>(B_Executed);
                     }
                 }
-
                 FabPartBrowserPage page = typeof(FabPartUtility).GetPrivateMember("FabBrowserPage") as FabPartBrowserPage;
                 Button settings = page.FindName("Settings") as Button;
                 settings.Content = $"Settings...";
@@ -93,8 +121,8 @@ namespace CODE.Free
                 };
                 ToolTipService.SetInitialShowDelay(reloadCheckBox, 200);
                 Grid newGrid = new Grid();
-                newGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto});
-                newGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto});
+                newGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
+                newGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
                 newGrid.Children.Add(settings);
                 newGrid.Children.Add(reloadCheckBox);
                 Grid.SetColumn(reloadCheckBox, 0);

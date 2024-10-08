@@ -65,6 +65,7 @@
 		  <HintPath>$(RevitLocation) $(RevitVersion)\Autodesk.UI.Windows.dll</HintPath>
 		  <Private>False</Private>
 		</Reference>
+		<Reference Include="System.Net.Http" />
 		<Reference Include="UIFramework">
 			<HintPath>$(RevitLocation) $(RevitVersion)\UIFramework.dll</HintPath>
 			<Private>False</Private>
