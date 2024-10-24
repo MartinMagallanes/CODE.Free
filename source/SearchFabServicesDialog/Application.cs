@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Events;
+using Autodesk.Revit.WPFFramework;
 using Autodesk.UI.Windows.Controls;
 using FabricationPartBrowser;
 using FabricationPartBrowser.Modules;
@@ -8,7 +9,6 @@ using FabSettings;
 using Nice3point.Revit.Toolkit.External;
 using System.ComponentModel;
 using System.IO;
-using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
@@ -16,6 +16,11 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
+#if (REVIT2025)
+//2025
+#else
+using System.Windows.Interactivity;
+#endif
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -80,6 +85,8 @@ namespace CODE.Free
         const string _toolTip = "Enter text to filter services list";
         const string _isConnected = "IsConfigConnectedToSource";
         const string _unloadedServices = "UnloadedServicesListView";
+        const string _contentTabControl = "ContentTabControl";
+        const string _itemFolders = "UI";
         const string _loadedServices = "LoadedServicesListView";
         const string _addButton = "Add";
         const string _addAllButton = "AddAll";
@@ -281,6 +288,7 @@ namespace CODE.Free
             Grid mainGrid = null;
             FabSettingsDialog _fabSettingsDialog = null;
             FabricationConfigurationUserControl _configControl = null;
+            TabControl _tabControl = null;
             public string GetName() => nameof(UpdateFabSettings);
             public string GetDescription() => "Upgrade Fabrication Settings Dialog.";
             public void Execute(UIApplication revitApp)
@@ -378,12 +386,205 @@ namespace CODE.Free
                     _configControl.LayoutUpdated += _configControl_LayoutUpdated;
                 }
             }
+            void SearchAllFiles2(string searchText)
+            {
+                string text = searchText;
+                if (string.IsNullOrWhiteSpace(text))
+                {
+                    _partsModel.SearchItems.Clear();
+                    return;
+                }
+
+                text = text.Trim();
+                List<string> words = (from x in text.Trim().Split(' ')
+                                      select x.Trim() into x
+                                      where !string.IsNullOrWhiteSpace(x)
+                                      select x).ToList();
+                if (words.Count == 0)
+                {
+                    return;
+                }
+
+                IEnumerable<string> source = words.Where((string x) => x.Length >= 1);
+                if (!source.Any())
+                {
+                    return;
+                }
+
+                List<ItemFile> matchingFiles = new List<ItemFile>();
+                _partsModel.AllItemFiles.ForEach(delegate (ItemFile x)
+                {
+                    bool flag2 = true;
+                    foreach (string item in words)
+                    {
+                        if (x.IsLoaded || x.Identifier.IndexOf(item, StringComparison.OrdinalIgnoreCase) < 0)
+                        //if (x.IsLoaded || x.Name.IndexOf(item, StringComparison.OrdinalIgnoreCase) < 0)
+                        {
+                            flag2 = false;
+                            break;
+                        }
+                    }
+
+                    if (flag2)
+                    {
+                        matchingFiles.Add(x);
+                    }
+                });
+                List<ItemFolder> matchingFolders = new List<ItemFolder>();
+                allItemFolders.ToList().ForEach(delegate (ItemFolder x)
+                {
+                    bool flag = true;
+                    foreach (string item2 in words)
+                    {
+                        if (x.GetItemFolderPath().IndexOf(item2, StringComparison.OrdinalIgnoreCase) < 0)
+                        {
+                            flag = false;
+                            break;
+                        }
+                    }
+
+                    if (flag)
+                    {
+                        matchingFolders.Add(x);
+                    }
+                });
+                List<Item> list = new List<Item>();
+                list.AddRange(matchingFolders.OrderBy((ItemFolder x) => x.GetItemFolderPath()));
+                list.AddRange(matchingFiles.OrderBy((ItemFile x) => x.Name));
+                if (list.Any())
+                {
+                    _partsModel.SearchItems.Clear();
+                    list.ForEach(delegate (Item x)
+                    {
+                        _partsModel.SearchItems.Add(x);
+                    });
+                }
+            }
+            HashSet<ItemFolder> allItemFolders
+            {
+                get
+                {
+                    if (_partsModel == null)
+                    {
+                        return new HashSet<ItemFolder>();
+                    }
+                    return
+                        typeof(ItemFoldersViewModel)
+                        .GetField("m_allItemFolders", BindingFlags.Instance | BindingFlags.NonPublic)?
+                        .GetValue(_partsModel) as HashSet<ItemFolder> ?? new HashSet<ItemFolder>();
+                }
+            }
+            ItemFoldersViewModel _partsModel { get; set; } = null;
+            ItemFoldersUserControl _ifuc { get; set; } = null;
+            void SearchCommandHandler2(object param)
+            {
+                string searchText = param as string;
+                SearchAllFiles2(searchText);
+            }
+            private void _tabControl_ItemsTabSelected(object sender, EventArgs e)
+            {
+                //UI.Popup($"_tabcontrol.selecteditem:{_tabControl.SelectedItem}");  
+                if (_tabControl.SelectedItem is TabItem ti && ti.Content is ContentControl cc)
+                {
+                    _ifuc = cc.Content as ItemFoldersUserControl;
+                    if (_ifuc != null)
+                    {
+                        _tabControl.LayoutUpdated -= _tabControl_ItemsTabSelected;
+                        _partsModel = _ifuc.DataContext as ItemFoldersViewModel;
+                        SearchTextBox tb = _ifuc.FindName("SearchTextBox") as SearchTextBox;
+                        //might need to just replace this SearchTextBox  
+                        RemoveRoutedEventHandlers(tb, SearchTextBox.GotFocusEvent);
+
+                        tb.GotFocus += (s, e) =>
+                        {
+                            SearchAllFiles2(tb.Text);
+                        };
+#if (REVIT2025)
+                        //2025
+#else
+                        Interaction.GetBehaviors(tb).Add(
+                            new EventTriggerBehavior
+                            {
+                                EventName = "Search",
+                                Command = new DelegateCommand(delegate (object param)
+                                {
+                                    SearchAllFiles2(tb.Text);
+                                }),
+                            });
+#endif
+
+                        //the following updates the item presentation in the listbox
+                        //try to write xaml resource and load that instead
+
+                        //ListBox lb = _ifuc.FindName("SearchListBox") as ListBox;
+
+                        // Update the DataTemplate for the items in lb  
+                        //DataTemplate itemTemplate = new DataTemplate(typeof(ItemFile));
+                        //FrameworkElementFactory gridFactory = new FrameworkElementFactory(typeof(Grid));
+                        //FrameworkElementFactory rowDef = new FrameworkElementFactory(typeof(RowDefinition));
+                        //FrameworkElementFactory rowDef2 = new FrameworkElementFactory(typeof(RowDefinition));
+                        //rowDef.SetValue(RowDefinition.HeightProperty, new GridLength(1, GridUnitType.Auto));
+                        //rowDef2.SetValue(RowDefinition.HeightProperty, new GridLength(1, GridUnitType.Auto));
+                        //gridFactory.AppendChild(rowDef);
+                        //gridFactory.AppendChild(rowDef2);
+
+                        //FrameworkElementFactory labelFactory = new FrameworkElementFactory(typeof(Label));
+                        //FrameworkElementFactory image = new FrameworkElementFactory(typeof(Image));
+                        //image.SetBinding(Image.SourceProperty, new Binding("ImageDirect"));
+                        //labelFactory.SetBinding(Label.ContentProperty, new Binding("Identifier"));
+                        //labelFactory.SetValue(Grid.RowProperty, 0);
+                        //image.SetValue(Grid.RowProperty, 1);
+                        //gridFactory.AppendChild(labelFactory);
+                        //gridFactory.AppendChild(image);
+
+                        //itemTemplate.VisualTree = gridFactory;
+                        //lb.Resources.Add("itemfileTemplate", itemTemplate);
+                        //lb.ItemTemplateSelector = new SearchListTemplateSelector()
+                        //{
+                        //    ItemFileTemplate = itemTemplate,
+                        //    ItemFolderTemplate = lb.ItemTemplate,
+                        //};
+                        //
+
+                        //DataTemplate itemTemplate = new DataTemplate(typeof(ItemFile));
+                        //FrameworkElementFactory gridFactory = new FrameworkElementFactory(typeof(Grid));
+                        //FrameworkElementFactory rowDef = new FrameworkElementFactory(typeof(RowDefinition));
+                        //FrameworkElementFactory colDef = new FrameworkElementFactory(typeof(ColumnDefinition));
+                        //rowDef.SetValue(RowDefinition.HeightProperty, new GridLength(20));
+                        //colDef.SetValue(ColumnDefinition.WidthProperty, GridLength.Auto);
+                        //gridFactory.AppendChild(rowDef);
+                        //gridFactory.AppendChild(rowDef);
+                        //gridFactory.AppendChild(colDef);
+                        //gridFactory.AppendChild(colDef);
+                        //gridFactory.AppendChild(colDef);
+                        //gridFactory.SetValue(Grid.ToolTipProperty, new Binding("ToolTip"));
+                        //FrameworkElementFactory image = new FrameworkElementFactory(typeof(Image));
+                        //image.SetBinding(Image.SourceProperty, new Binding("ImageDirect"));
+                        //image.SetValue(Grid.ColumnProperty, 0);
+                        //image.SetValue(Grid.RowProperty, 0);
+                        //gridFactory.AppendChild(image);
+
+                        //FrameworkElementFactory labelFactory = new FrameworkElementFactory(typeof(Label));
+                        //labelFactory.SetBinding(Label.ContentProperty, new Binding("ToolTip")); //'identifier' is full path
+                        //labelFactory.SetValue(Grid.ColumnProperty, 2);
+                        //labelFactory.SetValue(Grid.RowProperty, 0);
+                        //gridFactory.AppendChild(labelFactory);
+
+                        //FrameworkElementFactory cmb = new FrameworkElementFactory(typeof(SearchComboTextBlock));
+                        //cmb.SetBinding(SearchComboTextBlock.InlineCollectionProperty, new Binding() { Converter = lb.FindResource("highlightSearchConverter") as IValueConverter });
+                        //
+                    }
+                }
+            }
             void _configControl_LayoutUpdated(object sender, EventArgs e)
             {
                 unloadedServices = _configControl.FindName(_unloadedServices) as ListView;
                 if (unloadedServices != null && unloadedServices.Visibility == System.Windows.Visibility.Visible)
                 {
                     _configControl.LayoutUpdated -= _configControl_LayoutUpdated;
+                    _tabControl = _configControl.FindName(_contentTabControl) as TabControl;
+                    _tabControl.LayoutUpdated += _tabControl_ItemsTabSelected;
+
                     loadedServices = _configControl.FindName(_loadedServices) as ListView;
                     mainGrid = VisualTreeHelper.GetParent(unloadedServices) as Grid;
                     Button addBtn = _configControl.FindName(_addButton) as Button;
@@ -555,6 +756,7 @@ namespace CODE.Free
                     view2.Filter = Filter2;
                 }
             }
+
             void Splitter_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
             {
                 mainGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
@@ -604,6 +806,50 @@ namespace CODE.Free
                 get => this.GetValue(ItemFoldersTreeView.SelectedTreeViewItem_Property) as Item;
                 set => this.SetValue(ItemFoldersTreeView.SelectedTreeViewItem_Property, (object)value);
             }
+        }
+    }
+
+#if (REVIT2025)
+//2025
+#else
+    //implement Behavior
+    public class EventTriggerBehavior : Behavior<FrameworkElement>
+    {
+        public string EventName { get; set; }
+        public DelegateCommand Command { get; set; }
+
+        protected override void OnAttached()
+        {
+            EventInfo eventInfo = AssociatedObject.GetType().GetEvent(EventName);
+            if (eventInfo == null)
+                throw new InvalidOperationException($"Could not find any event named {EventName} on associated object.");
+            MethodInfo methodInfo = GetType().GetMethod("ExecuteCommand", BindingFlags.Instance | BindingFlags.NonPublic);
+            Delegate del = Delegate.CreateDelegate(eventInfo.EventHandlerType, this, methodInfo);
+            eventInfo.AddEventHandler(AssociatedObject, del);
+        }
+        void ExecuteCommand(object sender, EventArgs e)
+        {
+            if (Command.CanExecute(null))
+                Command.Execute(null);
+        }
+    }
+#endif
+    class SearchListTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate ItemFileTemplate { get; set; }
+        public DataTemplate ItemFolderTemplate { get; set; }
+
+        public override DataTemplate SelectTemplate(object item, DependencyObject container)
+        {
+            if (item is ItemFile)
+            {
+                return ItemFileTemplate;
+            }
+            else if (item is ItemFolder)
+            {
+                return ItemFolderTemplate;
+            }
+            return base.SelectTemplate(item, container);
         }
     }
 }
