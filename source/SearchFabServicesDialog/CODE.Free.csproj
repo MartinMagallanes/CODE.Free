@@ -5,7 +5,7 @@
         <LangVersion>latest</LangVersion>
         <PlatformTarget>x64</PlatformTarget>
         <ImplicitUsings>true</ImplicitUsings>
-        <PublishAddinFiles>false</PublishAddinFiles>
+        <PublishAddinFiles>true</PublishAddinFiles>
 		<GenerateDependencyFile>false</GenerateDependencyFile>
 		<Configurations>Release R21;Release R22;Release R23;Release R24;Release R25</Configurations>
         <Configurations>$(Configurations);Release R20;Release R21;Release R22;Release R23;Release R24;Release R25</Configurations>
@@ -44,13 +44,21 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <None Remove="Resources\Icons\AddAll.png" />
       <None Remove="Resources\Icons\Code Icon.ico" />
+      <None Remove="Resources\Icons\Refresh.ico" />
+      <None Remove="Resources\Icons\RemoveAll.png" />
     </ItemGroup>
 
     <ItemGroup>
+      <EmbeddedResource Include="Resources\Icons\AddAll.png" />
       <EmbeddedResource Include="Resources\Icons\Code Icon.ico">
         <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       </EmbeddedResource>
+      <EmbeddedResource Include="Resources\Icons\Refresh.ico">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <EmbeddedResource Include="Resources\Icons\RemoveAll.png" />
     </ItemGroup>
 
     <ItemGroup>

@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -81,6 +82,9 @@ namespace CODE.Free
         const string _unloadedServices = "UnloadedServicesListView";
         const string _loadedServices = "LoadedServicesListView";
         const string _addButton = "Add";
+        const string _addAllButton = "AddAll";
+        const string _removeButton = "Remove";
+        const string _removeAllButton = "RemoveAll";
         public static bool FabSettingsAutoReload = false;
         public static CheckBox reloadCheckBox = null;
         void OverrideFabConfigDialog()
@@ -108,9 +112,49 @@ namespace CODE.Free
                 }
                 FabPartBrowserPage page = typeof(FabPartUtility).GetPrivateMember("FabBrowserPage") as FabPartBrowserPage;
                 Button settings = page.FindName("Settings") as Button;
-                settings.Content = $"Settings...";
+                //settings.Content = $"Settings2...";
                 DockPanel panel = settings.Parent as DockPanel;
+                Button reload = new Button()
+                {
+                    Content = new Image()
+                    {
+                        Source = GetEmbeddedImage(Assembly.GetExecutingAssembly(), "CODE.Free.Resources.Icons.Refresh.ico"),
+                        //Source = GetImageFromPath(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Resources\\Icons", "Refresh.ico")),
+                        Stretch = Stretch.None,
+                    },
+                    Background = Brushes.Transparent,
+                    BorderBrush = Brushes.Transparent,
+                    BorderThickness = new Thickness(0),
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    HorizontalContentAlignment = HorizontalAlignment.Center,
+                    ToolTip = "Refresh the configuration",
+                    Margin = new Thickness(0),
+                    Padding = new Thickness(2),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                };
+                Binding visBind = new Binding
+                {
+                    Path = new PropertyPath("Visibility"),
+                    ElementName = "RoutingExclusionsBtn"
+                };
+                reload.SetBinding(ButtonBase.VisibilityProperty, visBind);
+                Binding enBind = new Binding
+                {
+                    Path = new PropertyPath("IsEnabled"),
+                    ElementName = "RoutingExclusionsBtn"
+                };
+                reload.SetBinding(ButtonBase.IsEnabledProperty, enBind);
+                reload.Click += (s, e) =>
+                {
+                    FabricationConfiguration.GetFabricationConfiguration(Context.ActiveDocument).ReloadConfiguration();
+                };
+                ToolTipService.SetInitialShowDelay(reload, 200);
+
+                panel.Children.Insert(2, reload);
+                DockPanel.SetDock(reload, Dock.Left);
                 panel.Children.Remove(settings);
+
                 reloadCheckBox = new CheckBox()
                 {
                     Content = "Reload on Open",
@@ -120,11 +164,14 @@ namespace CODE.Free
                     IsChecked = FabSettingsAutoReload,
                 };
                 ToolTipService.SetInitialShowDelay(reloadCheckBox, 200);
+                reloadCheckBox.SetBinding(ButtonBase.VisibilityProperty, visBind);
+                reloadCheckBox.SetBinding(ButtonBase.IsEnabledProperty, enBind);
+
                 Grid newGrid = new Grid();
-                newGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
-                newGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
-                newGrid.Children.Add(settings);
+                newGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto }); //for reload checkbox
+                newGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto }); //for settings
                 newGrid.Children.Add(reloadCheckBox);
+                newGrid.Children.Add(settings);
                 Grid.SetColumn(reloadCheckBox, 0);
                 Grid.SetColumn(settings, 1);
                 panel.Children.Insert(panel.Children.Count - 1, newGrid);
@@ -169,6 +216,17 @@ namespace CODE.Free
             {
                 Stream s = assem.GetManifestResourceStream(name);
                 return BitmapFrame.Create(s);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+        public static BitmapSource GetImageFromPath(string path)
+        {
+            try
+            {
+                return new BitmapImage(new Uri(path));
             }
             catch
             {
@@ -316,6 +374,7 @@ namespace CODE.Free
                     };
                     textBox.SetBinding(TextBox.IsEnabledProperty, b);
                     textBox2.SetBinding(TextBox.IsEnabledProperty, b);
+                    checkBox.SetBinding(TextBox.IsEnabledProperty, b);
                     _configControl.LayoutUpdated += _configControl_LayoutUpdated;
                 }
             }
@@ -327,18 +386,114 @@ namespace CODE.Free
                     _configControl.LayoutUpdated -= _configControl_LayoutUpdated;
                     loadedServices = _configControl.FindName(_loadedServices) as ListView;
                     mainGrid = VisualTreeHelper.GetParent(unloadedServices) as Grid;
-                    Button btn = _configControl.FindName(_addButton) as Button;
+                    Button addBtn = _configControl.FindName(_addButton) as Button;
+                    Button removeBtn = _configControl.FindName(_removeButton) as Button;
+                    addBtn.Margin = new Thickness(0);
+                    removeBtn.Margin = new Thickness(0, 10, 0, 0);
+                    Grid addRemoveGrid = addBtn.Parent as Grid;
+
+                    Style addAllStyle = new Style(typeof(Button));
+                    addAllStyle.BasedOn = addBtn.Style;
+                    addAllStyle.Setters.Add(new Setter(Button.IsEnabledProperty, true));
+                    Style removeAllStyle = new Style(typeof(Button));
+                    removeAllStyle.BasedOn = addBtn.Style;
+                    removeAllStyle.Setters.Add(new Setter(Button.IsEnabledProperty, true));
+                    DataTrigger dt = new DataTrigger()
+                    {
+                        Value = 0,
+                        Binding = new Binding
+                        {
+                            Path = new PropertyPath("Items.Count"),
+                            ElementName = _unloadedServices,
+                        },
+                        Setters = { new Setter(Button.IsEnabledProperty, false) }
+                    };
+                    DataTrigger dt2 = new DataTrigger()
+                    {
+                        Value = 0,
+                        Binding = new Binding
+                        {
+                            Path = new PropertyPath("Items.Count"),
+                            ElementName = _loadedServices,
+                        },
+                        Setters = { new Setter(Button.IsEnabledProperty, false) }
+                    };
+                    addAllStyle.Triggers.Add(dt);
+                    removeAllStyle.Triggers.Add(dt2);
+                    Button addAllButton = new Button()
+                    {
+                        Name = _addAllButton,
+                        Width = addBtn.Width,
+                        Height = addBtn.Height,
+                        Foreground = addBtn.Foreground,
+                        Background = addBtn.Background,
+                        BorderBrush = addBtn.BorderBrush,
+                        BorderThickness = addBtn.BorderThickness,
+                        Padding = addBtn.Padding,
+                        Margin = new Thickness(0, 35, 0, 0),
+                        Style = addAllStyle,
+                        ToolTip = "Add All",
+                        Content = new Image()
+                        {
+                            Source = GetEmbeddedImage(Assembly.GetExecutingAssembly(), "CODE.Free.Resources.Icons.AddAll.png"),
+                            Stretch = Stretch.None,
+                        },
+                    };
+                    addAllButton.Click += (s, e) =>
+                    {
+                        unloadedServices.SelectAll();
+                        FabPartUtility.SimulateButtonClick(addBtn);
+                        ReloadFilters();
+                    };
+                    Button removeAllBtn = new Button()
+                    {
+                        Name = _removeAllButton,
+                        Width = addBtn.Width,
+                        Height = addBtn.Height,
+                        Foreground = addBtn.Foreground,
+                        Background = addBtn.Background,
+                        BorderBrush = addBtn.BorderBrush,
+                        BorderThickness = addBtn.BorderThickness,
+                        Padding = addBtn.Padding,
+                        Margin = new Thickness(0, 10, 0, 0),
+                        Style = removeAllStyle,
+                        ToolTip = "Remove All",
+                        Content = new Image()
+                        {
+                            Source = GetEmbeddedImage(Assembly.GetExecutingAssembly(), "CODE.Free.Resources.Icons.RemoveAll.png"),
+                            Stretch = Stretch.None,
+                        },
+                    };
+                    removeAllBtn.Click += (s, e) =>
+                    {
+                        loadedServices.SelectAll();
+                        FabPartUtility.SimulateButtonClick(removeBtn);
+                        ReloadFilters();
+                    };
+                    ToolTipService.SetInitialShowDelay(addAllButton, 200);
+                    ToolTipService.SetInitialShowDelay(removeAllBtn, 200);
+                    ToolTipService.SetShowOnDisabled(addAllButton, true);
+                    ToolTipService.SetShowOnDisabled(removeAllBtn, true);
+                    addRemoveGrid.RowDefinitions.Insert(2, new RowDefinition() { Height = GridLength.Auto });
+                    addRemoveGrid.RowDefinitions.Insert(3, new RowDefinition() { Height = GridLength.Auto });
+                    addRemoveGrid.Children.Insert(2, addAllButton);
+                    addRemoveGrid.Children.Insert(3, removeAllBtn);
+                    Grid.SetRow(addAllButton, 2);
+                    Grid.SetRow(removeAllBtn, 3);
                     TabControl tabs = _configControl.FindName("ContentTabControl") as TabControl;
                     mainGrid.RowDefinitions.Insert(1, new RowDefinition() { Height = GridLength.Auto });
                     Grid.SetRow(unloadedServices, 2);
                     Grid.SetRow(loadedServices, 2);
-                    Grid.SetRow(btn.Parent as Grid, 2);
+                    Grid.SetRow(addRemoveGrid, 2);
                     mainGrid.Children.Add(textBox);
                     Grid.SetRow(textBox, 1);
                     Grid.SetColumn(textBox, 0);
                     mainGrid.Children.Add(textBox2);
                     Grid.SetRow(textBox2, 1);
                     Grid.SetColumn(textBox2, 2);
+
+                    mainGrid.ColumnDefinitions[0].MinWidth = 130;
+                    mainGrid.ColumnDefinitions[2].MinWidth = 130;
 
                     Style style = new Style(typeof(GridSplitter));
                     style.Setters.Add(new Setter(GridSplitter.BackgroundProperty, Brushes.Gray));
@@ -406,6 +561,10 @@ namespace CODE.Free
                 mainGrid.ColumnDefinitions[2].Width = new GridLength(1, GridUnitType.Star);
             }
             void Tb_TextChanged(object sender, TextChangedEventArgs e)
+            {
+                ReloadFilters();
+            }
+            void ReloadFilters()
             {
                 CollectionViewSource.GetDefaultView(unloadedServices.ItemsSource).Refresh();
                 CollectionViewSource.GetDefaultView(loadedServices.ItemsSource).Refresh();
