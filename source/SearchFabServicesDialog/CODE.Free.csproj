@@ -5,7 +5,7 @@
         <LangVersion>latest</LangVersion>
         <PlatformTarget>x64</PlatformTarget>
         <ImplicitUsings>true</ImplicitUsings>
-        <PublishAddinFiles>true</PublishAddinFiles>
+        <PublishAddinFiles>false</PublishAddinFiles>
 		<GenerateDependencyFile>false</GenerateDependencyFile>
 		<Configurations>Release R21;Release R22;Release R23;Release R24;Release R25</Configurations>
         <Configurations>$(Configurations);Release R20;Release R21;Release R22;Release R23;Release R24;Release R25</Configurations>
@@ -69,6 +69,10 @@
         <PackageReference Include="Nice3point.Revit.Api.RevitAPIUI" Version="$(RevitVersion).*" />
     </ItemGroup>
 	<ItemGroup>
+		<Reference Include="AdWindows">
+		  <HintPath>C:\Program Files\Autodesk\Revit 2021\AdWindows.dll</HintPath>
+		  <Private>False</Private>
+		</Reference>
 		<Reference Include="Autodesk.UI.Windows">
 		  <HintPath>$(RevitLocation) $(RevitVersion)\Autodesk.UI.Windows.dll</HintPath>
 		  <Private>False</Private>

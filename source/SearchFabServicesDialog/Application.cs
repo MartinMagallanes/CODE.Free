@@ -33,35 +33,50 @@ namespace CODE.Free
     [UsedImplicitly]
     public class Application : ExternalApplication
     {
-        string _hello => "https://licensing.contentorigin.dev/api/Hello";
-        string _goodbye => "https://licensing.contentorigin.dev/api/Hello/goodbye";
         public override void OnStartup()
         {
-            HttpClient client = new HttpClient();
-            HttpResponseMessage result = client.PostAsync(_hello, new StringContent(Serialize(Context.Application.LoginUserId, "CODE.Free"), Encoding.UTF8, "application/json")).Result;
-            if (!result.IsSuccessStatusCode)
-            {
-                UI.Popup($"Failed to connect to the licensing server. Email the following error to mmagallanes@contentorigin.dev.\nReason: {result.ReasonPhrase}");
-                return;
-            }
+            CheckIn.Hello(this);
+            CreateRibbon();
             OverrideFabConfigDialog();
+        }
+        private void CreateRibbon()
+        {
+            RevitCommandId cmd = RevitCommandId.LookupCommandId("ID_EXPORT_FABRICATION_PCF");
+            if (cmd != null)
+            {
+                UI.Popup($"can bind:{cmd.CanHaveBinding},has bind:{cmd.HasBinding},id:{cmd.Id},name:{cmd.Name}");
+                try
+                {
+                    UiApplication.RemoveAddInCommandBinding(cmd);
+                }
+                catch (Autodesk.Revit.Exceptions.InvalidOperationException)
+                {
+
+                }
+                AddInCommandBinding b = UiApplication.CreateAddInCommandBinding(cmd);
+                if (b != null)
+                {
+                    b.CanExecute += new EventHandler<CanExecuteEventArgs>(B_CanExecute);
+                    b.Executed += new EventHandler<ExecutedEventArgs>(B_Executed);
+                }
+            }
+
+            //RibbonPanel panel = Application.CreatePanel(_panelName, _tabName);
+            //var btn = panel.AddPushButton<FabSettingsV2>(_btnText)
+            //    .SetImage(_img)
+            //    .SetLargeImage(_largeImg);
+            //btn.LongDescription = _description;
+
+            //var panel = Application.CreatePanel("Commands", "Tag3D");
+
+            //panel.AddPushButton<>("Execute")
+            //    .SetImage("/Tag3D;component/Resources/Icons/RibbonIcon16.png")
+            //    .SetLargeImage("/Tag3D;component/Resources/Icons/RibbonIcon32.png");
         }
         public override void OnShutdown()
         {
-            HttpClient client = new HttpClient();
-            HttpResponseMessage result = client.PostAsync(_goodbye, new StringContent(Serialize(Context.Application.LoginUserId, "CODE.Free"), Encoding.UTF8, "application/json")).Result;
-            if (!result.IsSuccessStatusCode)
-            {
-                UI.Popup($"Failed to connect to the licensing server. Email the following error to mmagallanes@contentorigin.dev.\nReason: {result.ReasonPhrase}");
-            }
+            CheckIn.Goodbye();
             base.OnShutdown();
-        }
-        string Serialize(string loginUserId, string productId)
-        {
-            return
-            $"{{\"AutodeskUsername\":\"{loginUserId}\"," +
-            $"\"ProductIds\":[\"{productId}\"]," +
-            $"\"ActiveProductIds\":[\"{productId}\"]}}";
         }
         void B_CanExecute(object obj, CanExecuteEventArgs avgs)
         {
@@ -121,54 +136,54 @@ namespace CODE.Free
                 Button settings = page.FindName("Settings") as Button;
                 //settings.Content = $"Settings2...";
                 DockPanel panel = settings.Parent as DockPanel;
-                Button reload = new Button()
-                {
-                    Content = new Image()
-                    {
-                        Source = GetEmbeddedImage(Assembly.GetExecutingAssembly(), "CODE.Free.Resources.Icons.Refresh.ico"),
-                        //Source = GetImageFromPath(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Resources\\Icons", "Refresh.ico")),
-                        Stretch = Stretch.None,
-                    },
-                    Background = Brushes.Transparent,
-                    BorderBrush = Brushes.Transparent,
-                    BorderThickness = new Thickness(0),
-                    HorizontalAlignment = HorizontalAlignment.Left,
-                    HorizontalContentAlignment = HorizontalAlignment.Center,
-                    ToolTip = "Refresh the configuration",
-                    Margin = new Thickness(0),
-                    Padding = new Thickness(2),
-                    VerticalAlignment = VerticalAlignment.Center,
-                    VerticalContentAlignment = VerticalAlignment.Center,
-                };
+                //Button reload = new Button()
+                //{
+                //    Content = new Image()
+                //    {
+                //        Source = GetEmbeddedImage(Assembly.GetExecutingAssembly(), "CODE.Free.Resources.Icons.Refresh.ico"),
+                //        //Source = GetImageFromPath(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Resources\\Icons", "Refresh.ico")),
+                //        Stretch = Stretch.None,
+                //    },
+                //    Background = Brushes.Transparent,
+                //    BorderBrush = Brushes.Transparent,
+                //    BorderThickness = new Thickness(0),
+                //    HorizontalAlignment = HorizontalAlignment.Left,
+                //    HorizontalContentAlignment = HorizontalAlignment.Center,
+                //    ToolTip = "Refresh the configuration",
+                //    Margin = new Thickness(0),
+                //    Padding = new Thickness(2),
+                //    VerticalAlignment = VerticalAlignment.Center,
+                //    VerticalContentAlignment = VerticalAlignment.Center,
+                //};
                 Binding visBind = new Binding
                 {
                     Path = new PropertyPath("Visibility"),
                     ElementName = "RoutingExclusionsBtn"
                 };
-                reload.SetBinding(ButtonBase.VisibilityProperty, visBind);
+                //reload.SetBinding(ButtonBase.VisibilityProperty, visBind);
                 Binding enBind = new Binding
                 {
                     Path = new PropertyPath("IsEnabled"),
                     ElementName = "RoutingExclusionsBtn"
                 };
-                reload.SetBinding(ButtonBase.IsEnabledProperty, enBind);
-                reload.Click += (s, e) =>
-                {
-                    FabricationConfiguration.GetFabricationConfiguration(Context.ActiveDocument).ReloadConfiguration();
-                };
-                ToolTipService.SetInitialShowDelay(reload, 200);
+                //reload.SetBinding(ButtonBase.IsEnabledProperty, enBind);
+                //reload.Click += (s, e) =>
+                //{
+                //    FabricationConfiguration.GetFabricationConfiguration(Context.ActiveDocument).ReloadConfiguration();
+                //};
+                //ToolTipService.SetInitialShowDelay(reload, 200);
 
-                panel.Children.Insert(2, reload);
-                DockPanel.SetDock(reload, Dock.Left);
+                //panel.Children.Insert(2, reload);
+                //DockPanel.SetDock(reload, Dock.Left);
                 panel.Children.Remove(settings);
-
                 reloadCheckBox = new CheckBox()
                 {
                     Content = "Reload on Open",
-                    ToolTip = "Automatically Reload Configuration when this dialog is opened",
+                    ToolTip = "Automatically Reload Configuration when the Settings dialog is opened",
                     Margin = new Thickness(0, 0, 6, 0),
                     VerticalAlignment = VerticalAlignment.Center,
                     IsChecked = FabSettingsAutoReload,
+                    Visibility = CODE.Free.Application.FabSettingsAutoReload ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed,
                 };
                 ToolTipService.SetInitialShowDelay(reloadCheckBox, 200);
                 reloadCheckBox.SetBinding(ButtonBase.VisibilityProperty, visBind);
@@ -183,14 +198,10 @@ namespace CODE.Free
                 Grid.SetColumn(settings, 1);
                 panel.Children.Insert(panel.Children.Count - 1, newGrid);
                 DockPanel.SetDock(newGrid, Dock.Right);
-                reloadCheckBox.Checked += (s, e) =>
-                {
-                    FabSettingsAutoReload = true;
-                    SaveFabSettingsAutoReload();
-                };
                 reloadCheckBox.Unchecked += (s, e) =>
                 {
                     FabSettingsAutoReload = false;
+                    reloadCheckBox.Visibility = System.Windows.Visibility.Collapsed;
                     SaveFabSettingsAutoReload();
                 };
                 RemoveRoutedEventHandlers(settings, Button.ClickEvent);
@@ -349,6 +360,7 @@ namespace CODE.Free
                             Margin = new Thickness(15, 4, 4, 4),
                             ToolTip = "Automatically Reload Configuration when this dialog is opened",
                             IsChecked = CODE.Free.Application.FabSettingsAutoReload,
+                            Visibility = CODE.Free.Application.FabSettingsAutoReload ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed,
                         };
                         syncGrid.RowDefinitions.Insert(0, new RowDefinition() { Height = GridLength.Auto });
                         syncGrid.RowDefinitions.Insert(1, new RowDefinition() { Height = GridLength.Auto });
@@ -850,6 +862,45 @@ namespace CODE.Free
                 return ItemFolderTemplate;
             }
             return base.SelectTemplate(item, container);
+        }
+    }
+    public static class CheckIn
+    {
+        const string _hello = "https://licensing.contentorigin.dev/api/Hello";
+        const string _goodbye = "https://licensing.contentorigin.dev/api/Hello/goodbye";
+        const string _appJson = "application/json";
+        public static List<string> Addins = new List<string>();
+        static HttpClient _client = new HttpClient();
+        public static void Hello(object type)
+        {
+            try
+            {
+                string addin = type.GetType().FullName;
+                if (!Addins.Contains(addin))
+                {
+                    Addins.Add(addin);
+                }
+                _client.PostAsync(_hello, new StringContent(Serialize(Context.Application.Username, addin), Encoding.UTF8, _appJson));
+            }
+            catch { }
+        }
+        public static void Goodbye()
+        {
+            try
+            {
+                foreach (string addin in Addins)
+                {
+                    _client.PostAsync(_goodbye, new StringContent(Serialize(Context.Application.Username, addin), Encoding.UTF8, _appJson));
+                }
+            }
+            catch { }
+        }
+        static string Serialize(string userName, string productId)
+        {
+            return
+            $"{{\"AutodeskUsername\":\"{userName}\"," +
+            $"\"ProductIds\":[\"{productId}\"]," +
+            $"\"ActiveProductIds\":[\"{productId}\"]}}";
         }
     }
 }
