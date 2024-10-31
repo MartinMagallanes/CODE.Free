@@ -1,163 +1,797 @@
-﻿using Autodesk.Revit.Attributes;
-using Autodesk.Revit.DB.Fabrication;
-using Autodesk.Revit.UI;
+﻿using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Events;
-using Autodesk.Windows;
+using Autodesk.Revit.WPFFramework;
+using Autodesk.UI.Windows.Controls;
 using FabricationPartBrowser;
-using Microsoft.Win32;
-using Nice3point.Revit.Toolkit.External;
-using System.Windows.Automation.Peers;
-using System.Windows.Automation.Provider;
+using FabricationPartBrowser.Modules;
+using FabricationPartBrowser.ViewModels;
+using FabSettings;
+using System.ComponentModel;
+using System.IO;
+using System.Reflection;
+using System.Windows;
 using System.Windows.Controls;
-using UIFramework;
-using Control = System.Windows.Controls.Control;
-
-
+using System.Windows.Data;
+#if (REVIT2025)
+                        //2025
+#else
+using System.Windows.Interactivity;
+#endif
+using System.Windows.Interop;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using Binding = System.Windows.Data.Binding;
+using Grid = System.Windows.Controls.Grid;
+using TaskDialog = Autodesk.Revit.UI.TaskDialog;
+using TextBox = System.Windows.Controls.TextBox;
 namespace CODE.Free
 {
     /// <summary>
     ///     External command entry point invoked from the Revit interface
     /// </summary>
-    [UsedImplicitly]
-    [Transaction(TransactionMode.Manual)]
-    public class FabSettingsV2 : ExternalCommand
+    //[UsedImplicitly]
+    //[Transaction(TransactionMode.Manual)]
+    public class FabSettingsV2
     {
-        //RibbonItemControl GetControl(Control parent, string name)
-        //{
-        //    if (parent is Autodesk.Windows.RibbonItemControl rc && rc.DataContext is RibbonButton rb && rb.Id != null && rb.Id.Contains(name))
-        //    {
-
-        //        return rc;
-        //    }
-        //    foreach (Control c in parent.FindChildrenByType<Control>())
-        //    {
-        //        if (GetControl(c, name) is RibbonItemControl c2)
-        //        {
-        //            return c2;
-        //        }
-        //    }
-        //    return null;
-        //}
-        public override void Execute()
+        const string _search = "Search";
+        const string _toolTip = "Enter text to filter services list";
+        const string _isConnected = "IsConfigConnectedToSource";
+        const string _unloadedServices = "UnloadedServicesListView";
+        const string _contentTabControl = "ContentTabControl";
+        const string _loadedServices = "LoadedServicesListView";
+        const string _addButton = "Add";
+        const string _addAllButton = "AddAll";
+        const string _removeButton = "Remove";
+        const string _removeAllButton = "RemoveAll";
+        public static bool FabSettingsAutoReload = false;
+        public void Update()
         {
             CheckIn.Hello(this);
-            RevitCommandId cmd3 = RevitCommandId.LookupCommandId("ID_EXPORT_FABRICATION_PCF");
-            IDictionary<Guid, Delegate> dic = getBeforeCommandEventDelegate(cmd3.Id);
-            UI.Popup($"dic1 null: {dic == null}");
-            foreach (RibbonTab tab in UIFramework.RevitRibbonControl.RibbonControl.Tabs)
+            FabSettingsAutoReload = CODE.Free.Properties.Settings.Default.FabSettingsAutoReload;
+            try
             {
-                if (!tab.Title.Contains("Modify"))
+                RevitCommandId cmd = RevitCommandId.LookupCommandId("ID_MEP_FABRICATION_SETTINGS");
+                if (cmd != null)
                 {
-                    continue;
-                }
-                foreach (Autodesk.Windows.RibbonPanel panel in tab.Panels)
-                {
-                    //UI.Popup(panel.Source.Title);
-                    if (!panel.Source.Title.Contains("Export"))
+                    try
                     {
-                        continue;
+                        Context.UiApplication.RemoveAddInCommandBinding(cmd);
                     }
-                    foreach (Autodesk.Windows.RibbonItem item in panel.Source.Items)
+                    catch (Autodesk.Revit.Exceptions.InvalidOperationException)
                     {
-                        if (!item.Id.Contains("ID_EXPORT_FABRICATION_PCF"))
-                        {
-                            continue;
-                        }
-                        item.IsVisibleBinding = null;
-                        item.IsEnabledBinding = null;
-                        item.IsVisible = true;
-                        item.IsEnabled = true;
-                        (item.Tag as ControlHelperExtension).HideIfDisabled = false;
 
-                        RevitCommandId cmd = RevitCommandId.LookupCommandId("ID_EXPORT_FABRICATION_PCF");
-                        if (cmd != null)
-                        {
-                            try
-                            {
-                                UiApplication.RemoveAddInCommandBinding(cmd);
-                            }
-                            catch (System.Exception ex)
-                            {
-                                UI.Popup(ex.Message);
-                            }
-                            AddInCommandBinding b = UiApplication.CreateAddInCommandBinding(cmd);
-                            if (b != null)
-                            {
-                                b.CanExecute += new EventHandler<CanExecuteEventArgs>(B_CanExecute);
-                                b.Executed += new EventHandler<ExecutedEventArgs>(MM_ex);
-                            }
-                            dic = getBeforeCommandEventDelegate(cmd.Id);
-                            UI.Popup($"cmd.id:{cmd.Id}\ndic2 null: {dic == null}");
-                            if (dic != null)
-                            {
-                                foreach (Guid key in dic.Keys)
-                                {
-                                    UI.Popup($"key: {key}, {dic[key].Method.Name}");
-                                }
-                            }
-                        }
+                    }
+                    AddInCommandBinding b = Context.UiApplication.CreateAddInCommandBinding(cmd);
+                    if (b != null)
+                    {
+                        b.CanExecute += new EventHandler<CanExecuteEventArgs>(B_CanExecute);
+                        b.Executed += new EventHandler<ExecutedEventArgs>(B_Executed);
                     }
                 }
+                FabPartBrowserPage page = typeof(FabPartUtility).GetPrivateMember("FabBrowserPage") as FabPartBrowserPage;
+                Button settings = page.FindName("Settings") as Button;
+                DockPanel panel = settings.Parent as DockPanel;
+                //Button reload = new Button()
+                //{
+                //    Content = new Image()
+                //    {
+                //        Source = GetEmbeddedImage(Assembly.GetExecutingAssembly(), "CODE.Free.Resources.Icons.Refresh.ico"),
+                //        //Source = GetImageFromPath(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Resources\\Icons", "Refresh.ico")),
+                //        Stretch = Stretch.None,
+                //    },
+                //    Background = Brushes.Transparent,
+                //    BorderBrush = Brushes.Transparent,
+                //    BorderThickness = new Thickness(0),
+                //    HorizontalAlignment = HorizontalAlignment.Left,
+                //    HorizontalContentAlignment = HorizontalAlignment.Center,
+                //    ToolTip = "Refresh the configuration",
+                //    Margin = new Thickness(0),
+                //    Padding = new Thickness(2),
+                //    VerticalAlignment = VerticalAlignment.Center,
+                //    VerticalContentAlignment = VerticalAlignment.Center,
+                //};
+                //Binding visBind = new Binding
+                //{
+                //    Path = new PropertyPath("Visibility"),
+                //    ElementName = "RoutingExclusionsBtn"
+                //};
+                //reload.SetBinding(ButtonBase.VisibilityProperty, visBind);
+                //Binding enBind = new Binding
+                //{
+                //    Path = new PropertyPath("IsEnabled"),
+                //    ElementName = "RoutingExclusionsBtn"
+                //};
+                //reload.SetBinding(ButtonBase.IsEnabledProperty, enBind);
+                //reload.Click += (s, e) =>
+                //{
+                //    FabricationConfiguration.GetFabricationConfiguration(Context.ActiveDocument).ReloadConfiguration();
+                //};
+                //ToolTipService.SetInitialShowDelay(reload, 200);
+
+                //panel.Children.Insert(2, reload);
+                //DockPanel.SetDock(reload, Dock.Left);
+
+                RemoveRoutedEventHandlers(settings, Button.ClickEvent);
+                settings.Click += Settings_Click;
             }
-            //Type uia = typeof(UIApplication);
-            //System.Reflection.MethodInfo method = uia.GetMethod("getBeforeCommandEventDelegate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-            //UI.Popup($"method:{method != null}, cmd3:{cmd3 != null},{cmd3.Id}, uia:{UiApplication != null}");
-            ////System.Reflection.MethodInfo method = uia.GetMethod("getCommandEventDelegate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-            //IDictionary<Guid, Delegate> before = method.Invoke(UiApplication, [cmd3.Id]) as IDictionary<Guid, Delegate>;
-            //UI.Popup($"before: {before != null}");
-            ////Delegate del = method.Invoke(UiApplication, cmd.Id, cmd.id
+            catch (Exception ex)
+            {
+                UI.Test(ex.Message);
+            }
         }
-
-        internal IDictionary<Guid, Delegate> getBeforeCommandEventDelegate(uint revitCmdId)
+        void B_CanExecute(object obj, CanExecuteEventArgs avgs)
         {
-            Dictionary<uint, IDictionary<Guid, Delegate>> dictionary = typeof(UIApplication).GetField("sm_ExecutedHandlerDictionary", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic).GetValue(null) as Dictionary<uint, IDictionary<Guid, Delegate>>;
-            UI.Popup($"has key: {dictionary.ContainsKey(revitCmdId)}");
-            if (dictionary.ContainsKey(revitCmdId))
+            if (avgs.ActiveDocument == null || !avgs.ActiveDocument.Application.IsMechanicalAnalysisEnabled || avgs.ActiveDocument.IsModifiable)
+                avgs.CanExecute = false;
+            else
+                avgs.CanExecute = true;
+        }
+        void B_Executed(object sender, ExecutedEventArgs e)
+        {
+            try
             {
-                IDictionary<Guid, Delegate> dictionary2 = dictionary[revitCmdId];
-                if (dictionary2 == null)
-                {
-                    UI.Popup("dictionary2 is null");
-                    return null;
-                }
-
-                return dictionary2;
+                OnButtonSettingsClick();
             }
+            catch (Exception ex)
+            {
+                TaskDialog.Show($"Error: {this.GetType().FullName}", $"B_Executed():\n{ex.GetType()}: {ex.Message}");
+            }
+        }
+        static void SaveFabSettingsAutoReload()
+        {
+            CODE.Free.Properties.Settings.Default.FabSettingsAutoReload = FabSettingsAutoReload;
+            CODE.Free.Properties.Settings.Default.Save();
+        }
+        static void Settings_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                OnButtonSettingsClick();
+            }
+            catch (Exception ex)
+            {
+                UI.Test(ex.Message);
+            }
+        }
+        public static BitmapSource GetEmbeddedImage(Assembly assem, string name)
+        {
+            try
+            {
+                Stream s = assem.GetManifestResourceStream(name);
+                return BitmapFrame.Create(s);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+        public static BitmapSource GetImageFromPath(string path)
+        {
+            try
+            {
+                return new BitmapImage(new Uri(path));
+            }
+            catch
+            {
+                return null;
+            }
+        }
+        public static void OnButtonSettingsClick()
+        {
+            if (!ServiceButtonBase.CanTakeoff)
+                return;
+            FabPartBrowserExternalEventHandlerManager.Instance.RaiseEvent((IExternalEventWorker)new UpdateFabSettings());
+        }
+        public static void RemoveRoutedEventHandlers(UIElement element, RoutedEvent routedEvent)
+        {
+            // Get the EventHandlersStore instance which holds event handlers for the specified element.
+            // The EventHandlersStore class is declared as internal.
+            var eventHandlersStoreProperty = typeof(UIElement).GetProperty(
+                "EventHandlersStore", BindingFlags.Instance | BindingFlags.NonPublic);
+            object eventHandlersStore = eventHandlersStoreProperty.GetValue(element, null);
 
+            if (eventHandlersStore == null) return;
+
+            // Invoke the GetRoutedEventHandlers method on the EventHandlersStore instance 
+            // for getting an array of the subscribed event handlers.
+            var getRoutedEventHandlers = eventHandlersStore.GetType().GetMethod(
+                "GetRoutedEventHandlers", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            var routedEventHandlers = (RoutedEventHandlerInfo[])getRoutedEventHandlers.Invoke(
+                eventHandlersStore, new object[] { routedEvent });
+
+            // Iteratively remove all routed event handlers from the element.
+            foreach (var routedEventHandler in routedEventHandlers)
+                element.RemoveHandler(routedEvent, routedEventHandler.Handler);
+        }
+        public static Window GetWindow(WindowCollection list, IntPtr hwnd)
+        {
+            foreach (Window wnd in list)
+            {
+                if (new WindowInteropHelper(wnd).Handle == hwnd)
+                {
+                    return wnd;
+                }
+            }
             return null;
         }
-        void B_CanExecute(object sender, CanExecuteEventArgs avgs)
+        public class UpdateFabSettings : IExternalEventWorker
         {
-            avgs.CanExecute = true;
-            //if (!(obj is UIApplication uiApplication) ||
-            //    uiApplication.ActiveUIDocument == null ||
-            //    uiApplication.ActiveUIDocument.Selection.GetElementIds().Count == 0 ||
-            //    avgs.ActiveDocument == null ||
-            //    !avgs.ActiveDocument.Application.IsMechanicalAnalysisEnabled ||
-            //    avgs.ActiveDocument.IsModifiable)
-            //    avgs.CanExecute = false;
-            //else
-            //    avgs.CanExecute = true;
-        }
-        void MM_ex(object sender, ExecutedEventArgs e)
-        {
-            SaveFileDialog dialog = new SaveFileDialog
+            ListView unloadedServices = null;
+            ListView loadedServices = null;
+            TextBox textBox = null;
+            TextBox textBox2 = null;
+            Button addAllBtn = null;
+            Button removeAllBtn = null;
+            CheckBox checkBox = null;
+            Grid mainGrid = null;
+            Binding bind = new Binding()
             {
-                Filter = "PCF Files (*.pcf)|*.pcf",
-                DefaultExt = "pcf",
-                AddExtension = true,
-                FileName = "ExportedPCF.pcf"
+                Path = new PropertyPath(_isConnected)
             };
-            if (dialog.ShowDialog() != true)
+            FabSettingsDialog _fabSettingsDialog = null;
+            FabricationConfigurationUserControl _configControl = null;
+            TabControl _tabControl = null;
+            public string GetName() => nameof(UpdateFabSettings);
+            public string GetDescription() => "Upgrade Fabrication Settings Dialog.";
+            public void Execute(UIApplication revitApp)
             {
-                UI.Popup(2);
-                return;
+                _fabSettingsDialog = null;
+                try
+                {
+                    _fabSettingsDialog = new FabSettingsDialog(GlobalInfo.CurrentDoc);
+                    _fabSettingsDialog.Activated += _fabSettingsDialog_Activated;
+                    _fabSettingsDialog.Closing += _updateAutoReload;
+                    _fabSettingsDialog.SetParent(revitApp.MainWindowHandle);
+                    _fabSettingsDialog.ShowDialog();
+                }
+                catch (Autodesk.Revit.Exceptions.InvalidOperationException ex)
+                {
+                    if (!(ex.Message == "Failed to launch the Fabrication Settings Dialog."))
+                        throw ex;
+                    if (_fabSettingsDialog == null || !_fabSettingsDialog.IsVisible)
+                        return;
+                    _fabSettingsDialog.Close();
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
             }
-            FabricationUtils.ExportToPCF(
-                e.ActiveDocument,
-                (sender as UIApplication).ActiveUIDocument.Selection.GetElementIds().ToList(),
-                dialog.FileName);
-            UI.Popup("Done");
+            private void _updateAutoReload(object sender, CancelEventArgs e)
+            {
+                if (checkBox != null)
+                {
+                    FabSettingsAutoReload = checkBox.IsChecked ?? false;
+                }
+                SaveFabSettingsAutoReload();
+            }
+            void _fabSettingsDialog_Activated(object sender, EventArgs e)
+            {
+                _fabSettingsDialog.Activated -= _fabSettingsDialog_Activated;
+                _configControl = typeof(FabPartUtility).GetPrivateMember("FabConfigControl") as FabricationConfigurationUserControl;
+                if (_configControl != null)
+                {
+                    Button sync = _configControl.FindName("Sync") as Button;
+                    Grid syncGrid = sync.Parent as Grid;
+                    if (syncGrid != null)
+                    {
+                        checkBox = new CheckBox()
+                        {
+                            Content = "Reload on Open",
+                            Margin = new Thickness(15, 4, 4, 4),
+                            ToolTip = "Automatically Reload Configuration when this dialog is opened",
+                            IsChecked = FabSettingsAutoReload,
+                            Visibility = System.Windows.Visibility.Visible,
+                        };
+                        syncGrid.RowDefinitions.Insert(0, new RowDefinition() { Height = GridLength.Auto });
+                        syncGrid.RowDefinitions.Insert(1, new RowDefinition() { Height = GridLength.Auto });
+                        syncGrid.Children.Add(checkBox);
+                        Grid.SetRow(checkBox, 1);
+                        Grid.SetColumn(checkBox, 0);
+                        ToolTipService.SetInitialShowDelay(checkBox, 200);
+                    }
+                    if (FabSettingsAutoReload)
+                    {
+                        FabPartUtility.SimulateButtonClick(sync);
+                    }
+                    _fabSettingsDialog.Icon = GetEmbeddedImage(Assembly.GetExecutingAssembly(), "CODE.Free.Resources.Icons.Code Icon.ico");
+                    textBox = new SearchTextBox()
+                    {
+                        LabelText = _search,
+                        Margin = new Thickness(15, 0, 0, 5),
+                        ToolTip = _toolTip,
+                    };
+                    textBox.TextChanged += Tb_TextChanged;
+                    textBox2 = new SearchTextBox()
+                    {
+                        LabelText = _search,
+                        Margin = new Thickness(0, 0, 15, 5),
+                        ToolTip = _toolTip,
+                    };
+                    textBox2.TextChanged += Tb_TextChanged;
+                    textBox.SetBinding(TextBox.IsEnabledProperty, bind);
+                    textBox2.SetBinding(TextBox.IsEnabledProperty, bind);
+                    checkBox.SetBinding(CheckBox.IsEnabledProperty, bind);
+                    _configControl.LayoutUpdated += _configControl_LayoutUpdated;
+                }
+            }
+            void SearchAllFiles2(string searchText)
+            {
+                string text = searchText;
+                if (string.IsNullOrWhiteSpace(text))
+                {
+                    _partsModel.SearchItems.Clear();
+                    return;
+                }
+
+                text = text.Trim();
+                List<string> words = (from x in text.Trim().Split(' ')
+                                      select x.Trim() into x
+                                      where !string.IsNullOrWhiteSpace(x)
+                                      select x).ToList();
+                if (words.Count == 0)
+                {
+                    return;
+                }
+
+                IEnumerable<string> source = words.Where((string x) => x.Length >= 1);
+                if (!source.Any())
+                {
+                    return;
+                }
+
+                List<ItemFile> matchingFiles = new List<ItemFile>();
+                _partsModel.AllItemFiles.ForEach(delegate (ItemFile x)
+                {
+                    bool flag2 = true;
+                    foreach (string item in words)
+                    {
+                        if (x.IsLoaded || x.Identifier.IndexOf(item, StringComparison.OrdinalIgnoreCase) < 0)
+                        //if (x.IsLoaded || x.Name.IndexOf(item, StringComparison.OrdinalIgnoreCase) < 0)
+                        {
+                            flag2 = false;
+                            break;
+                        }
+                    }
+
+                    if (flag2)
+                    {
+                        matchingFiles.Add(x);
+                    }
+                });
+                List<ItemFolder> matchingFolders = new List<ItemFolder>();
+                allItemFolders.ToList().ForEach(delegate (ItemFolder x)
+                {
+                    bool flag = true;
+                    foreach (string item2 in words)
+                    {
+                        if (x.GetItemFolderPath().IndexOf(item2, StringComparison.OrdinalIgnoreCase) < 0)
+                        {
+                            flag = false;
+                            break;
+                        }
+                    }
+
+                    if (flag)
+                    {
+                        matchingFolders.Add(x);
+                    }
+                });
+                List<Item> list = new List<Item>();
+                list.AddRange(matchingFolders.OrderBy((ItemFolder x) => x.GetItemFolderPath()));
+                list.AddRange(matchingFiles.OrderBy((ItemFile x) => x.Name));
+                if (list.Any())
+                {
+                    _partsModel.SearchItems.Clear();
+                    list.ForEach(delegate (Item x)
+                    {
+                        _partsModel.SearchItems.Add(x);
+                    });
+                }
+            }
+            HashSet<ItemFolder> allItemFolders
+            {
+                get
+                {
+                    if (_partsModel == null)
+                    {
+                        return new HashSet<ItemFolder>();
+                    }
+                    return
+                        typeof(ItemFoldersViewModel)
+                        .GetField("m_allItemFolders", BindingFlags.Instance | BindingFlags.NonPublic)?
+                        .GetValue(_partsModel) as HashSet<ItemFolder> ?? new HashSet<ItemFolder>();
+                }
+            }
+            ItemFoldersViewModel _partsModel { get; set; } = null;
+            ItemFoldersUserControl _ifuc { get; set; } = null;
+            void SearchCommandHandler2(object param)
+            {
+                string searchText = param as string;
+                SearchAllFiles2(searchText);
+            }
+            private void _tabControl_ItemsTabSelected(object sender, EventArgs e)
+            {
+                //UI.Popup($"_tabcontrol.selecteditem:{_tabControl.SelectedItem}");  
+                if (_tabControl.SelectedItem is TabItem ti && ti.Content is ContentControl cc)
+                {
+                    _ifuc = cc.Content as ItemFoldersUserControl;
+                    if (_ifuc != null)
+                    {
+                        _tabControl.LayoutUpdated -= _tabControl_ItemsTabSelected;
+                        _partsModel = _ifuc.DataContext as ItemFoldersViewModel;
+                        SearchTextBox tb = _ifuc.FindName("SearchTextBox") as SearchTextBox;
+                        //might need to just replace this SearchTextBox  
+                        RemoveRoutedEventHandlers(tb, SearchTextBox.GotFocusEvent);
+
+                        tb.GotFocus += (s, e) =>
+                        {
+                            SearchAllFiles2(tb.Text);
+                        };
+#if (REVIT2025)
+                        //2025
+#else
+                        Interaction.GetBehaviors(tb).Add(
+                            new EventTriggerBehavior
+                            {
+                                EventName = "Search",
+                                Command = new DelegateCommand(delegate (object param)
+                                {
+                                    SearchAllFiles2(tb.Text);
+                                }),
+                            });
+#endif
+
+                        //the following updates the item presentation in the listbox
+                        //try to write xaml resource and load that instead
+
+                        //ListBox lb = _ifuc.FindName("SearchListBox") as ListBox;
+
+                        // Update the DataTemplate for the items in lb  
+                        //DataTemplate itemTemplate = new DataTemplate(typeof(ItemFile));
+                        //FrameworkElementFactory gridFactory = new FrameworkElementFactory(typeof(Grid));
+                        //FrameworkElementFactory rowDef = new FrameworkElementFactory(typeof(RowDefinition));
+                        //FrameworkElementFactory rowDef2 = new FrameworkElementFactory(typeof(RowDefinition));
+                        //rowDef.SetValue(RowDefinition.HeightProperty, new GridLength(1, GridUnitType.Auto));
+                        //rowDef2.SetValue(RowDefinition.HeightProperty, new GridLength(1, GridUnitType.Auto));
+                        //gridFactory.AppendChild(rowDef);
+                        //gridFactory.AppendChild(rowDef2);
+
+                        //FrameworkElementFactory labelFactory = new FrameworkElementFactory(typeof(Label));
+                        //FrameworkElementFactory image = new FrameworkElementFactory(typeof(Image));
+                        //image.SetBinding(Image.SourceProperty, new Binding("ImageDirect"));
+                        //labelFactory.SetBinding(Label.ContentProperty, new Binding("Identifier"));
+                        //labelFactory.SetValue(Grid.RowProperty, 0);
+                        //image.SetValue(Grid.RowProperty, 1);
+                        //gridFactory.AppendChild(labelFactory);
+                        //gridFactory.AppendChild(image);
+
+                        //itemTemplate.VisualTree = gridFactory;
+                        //lb.Resources.Add("itemfileTemplate", itemTemplate);
+                        //lb.ItemTemplateSelector = new SearchListTemplateSelector()
+                        //{
+                        //    ItemFileTemplate = itemTemplate,
+                        //    ItemFolderTemplate = lb.ItemTemplate,
+                        //};
+                        //
+
+                        //DataTemplate itemTemplate = new DataTemplate(typeof(ItemFile));
+                        //FrameworkElementFactory gridFactory = new FrameworkElementFactory(typeof(Grid));
+                        //FrameworkElementFactory rowDef = new FrameworkElementFactory(typeof(RowDefinition));
+                        //FrameworkElementFactory colDef = new FrameworkElementFactory(typeof(ColumnDefinition));
+                        //rowDef.SetValue(RowDefinition.HeightProperty, new GridLength(20));
+                        //colDef.SetValue(ColumnDefinition.WidthProperty, GridLength.Auto);
+                        //gridFactory.AppendChild(rowDef);
+                        //gridFactory.AppendChild(rowDef);
+                        //gridFactory.AppendChild(colDef);
+                        //gridFactory.AppendChild(colDef);
+                        //gridFactory.AppendChild(colDef);
+                        //gridFactory.SetValue(Grid.ToolTipProperty, new Binding("ToolTip"));
+                        //FrameworkElementFactory image = new FrameworkElementFactory(typeof(Image));
+                        //image.SetBinding(Image.SourceProperty, new Binding("ImageDirect"));
+                        //image.SetValue(Grid.ColumnProperty, 0);
+                        //image.SetValue(Grid.RowProperty, 0);
+                        //gridFactory.AppendChild(image);
+
+                        //FrameworkElementFactory labelFactory = new FrameworkElementFactory(typeof(Label));
+                        //labelFactory.SetBinding(Label.ContentProperty, new Binding("ToolTip")); //'identifier' is full path
+                        //labelFactory.SetValue(Grid.ColumnProperty, 2);
+                        //labelFactory.SetValue(Grid.RowProperty, 0);
+                        //gridFactory.AppendChild(labelFactory);
+
+                        //FrameworkElementFactory cmb = new FrameworkElementFactory(typeof(SearchComboTextBlock));
+                        //cmb.SetBinding(SearchComboTextBlock.InlineCollectionProperty, new Binding() { Converter = lb.FindResource("highlightSearchConverter") as IValueConverter });
+                        //
+                    }
+                }
+            }
+            void _configControl_LayoutUpdated(object sender, EventArgs e)
+            {
+                unloadedServices = _configControl.FindName(_unloadedServices) as ListView;
+                if (unloadedServices != null && unloadedServices.Visibility == System.Windows.Visibility.Visible)
+                {
+                    _configControl.LayoutUpdated -= _configControl_LayoutUpdated;
+                    //_tabControl = _configControl.FindName(_contentTabControl) as TabControl;
+                    //_tabControl.LayoutUpdated += _tabControl_ItemsTabSelected;
+
+                    loadedServices = _configControl.FindName(_loadedServices) as ListView;
+                    mainGrid = VisualTreeHelper.GetParent(unloadedServices) as Grid;
+                    Button addBtn = _configControl.FindName(_addButton) as Button;
+                    Button removeBtn = _configControl.FindName(_removeButton) as Button;
+                    addBtn.Margin = new Thickness(0);
+                    removeBtn.Margin = new Thickness(0, 10, 0, 0);
+                    Grid addRemoveGrid = addBtn.Parent as Grid;
+
+                    Style addAllStyle = new Style(typeof(Button));
+                    addAllStyle.BasedOn = addBtn.Style;
+                    addAllStyle.Setters.Add(new Setter(Button.IsEnabledProperty, true));
+                    Style removeAllStyle = new Style(typeof(Button));
+                    removeAllStyle.BasedOn = addBtn.Style;
+                    removeAllStyle.Setters.Add(new Setter(Button.IsEnabledProperty, true));
+                    DataTrigger dt = new DataTrigger()
+                    {
+                        Value = 0,
+                        Binding = new Binding
+                        {
+                            Path = new PropertyPath("Items.Count"),
+                            ElementName = _unloadedServices,
+                        },
+                        Setters = { new Setter(Button.IsEnabledProperty, false) }
+                    };
+                    DataTrigger dt2 = new DataTrigger()
+                    {
+                        Value = 0,
+                        Binding = new Binding
+                        {
+                            Path = new PropertyPath("Items.Count"),
+                            ElementName = _loadedServices,
+                        },
+                        Setters = { new Setter(Button.IsEnabledProperty, false) }
+                    };
+                    DataTrigger dt3 = new DataTrigger()
+                    {
+                        Value = false,
+                        Binding = new Binding()
+                        {
+                            Path = new PropertyPath(_isConnected),
+                        },
+                        Setters = { new Setter(Button.IsEnabledProperty, false) }
+                    };
+                    addAllStyle.Triggers.Add(dt);
+                    addAllStyle.Triggers.Add(dt3);
+                    removeAllStyle.Triggers.Add(dt2);
+                    removeAllStyle.Triggers.Add(dt3);
+                    addAllBtn = new Button()
+                    {
+                        Name = _addAllButton,
+                        Width = addBtn.Width,
+                        Height = addBtn.Height,
+                        Foreground = addBtn.Foreground,
+                        Background = addBtn.Background,
+                        BorderBrush = addBtn.BorderBrush,
+                        BorderThickness = addBtn.BorderThickness,
+                        Padding = addBtn.Padding,
+                        Margin = new Thickness(0, 35, 0, 0),
+                        Style = addAllStyle,
+                        ToolTip = "Add All",
+                        Content = new Image()
+                        {
+                            Source = GetEmbeddedImage(Assembly.GetExecutingAssembly(), "CODE.Free.Resources.Icons.AddAll.png"),
+                            Stretch = Stretch.None,
+                        },
+                    };
+                    addAllBtn.Click += (s, e) =>
+                    {
+                        unloadedServices.SelectAll();
+                        FabPartUtility.SimulateButtonClick(addBtn);
+                        ReloadFilters();
+                    };
+
+                    removeAllBtn = new Button()
+                    {
+                        Name = _removeAllButton,
+                        Width = addBtn.Width,
+                        Height = addBtn.Height,
+                        Foreground = addBtn.Foreground,
+                        Background = addBtn.Background,
+                        BorderBrush = addBtn.BorderBrush,
+                        BorderThickness = addBtn.BorderThickness,
+                        Padding = addBtn.Padding,
+                        Margin = new Thickness(0, 10, 0, 0),
+                        Style = removeAllStyle,
+                        ToolTip = "Remove All",
+                        Content = new Image()
+                        {
+                            Source = GetEmbeddedImage(Assembly.GetExecutingAssembly(), "CODE.Free.Resources.Icons.RemoveAll.png"),
+                            Stretch = Stretch.None,
+                        },
+                    };
+                    removeAllBtn.Click += (s, e) =>
+                    {
+                        loadedServices.SelectAll();
+                        FabPartUtility.SimulateButtonClick(removeBtn);
+                        ReloadFilters();
+                    };
+
+                    ToolTipService.SetInitialShowDelay(addAllBtn, 200);
+                    ToolTipService.SetInitialShowDelay(removeAllBtn, 200);
+                    ToolTipService.SetShowOnDisabled(addAllBtn, true);
+                    ToolTipService.SetShowOnDisabled(removeAllBtn, true);
+                    addRemoveGrid.RowDefinitions.Insert(2, new RowDefinition() { Height = GridLength.Auto });
+                    addRemoveGrid.RowDefinitions.Insert(3, new RowDefinition() { Height = GridLength.Auto });
+                    addRemoveGrid.Children.Insert(2, addAllBtn);
+                    addRemoveGrid.Children.Insert(3, removeAllBtn);
+                    Grid.SetRow(addAllBtn, 2);
+                    Grid.SetRow(removeAllBtn, 3);
+                    TabControl tabs = _configControl.FindName("ContentTabControl") as TabControl;
+                    mainGrid.RowDefinitions.Insert(1, new RowDefinition() { Height = GridLength.Auto });
+                    Grid.SetRow(unloadedServices, 2);
+                    Grid.SetRow(loadedServices, 2);
+                    Grid.SetRow(addRemoveGrid, 2);
+                    mainGrid.Children.Add(textBox);
+                    Grid.SetRow(textBox, 1);
+                    Grid.SetColumn(textBox, 0);
+                    mainGrid.Children.Add(textBox2);
+                    Grid.SetRow(textBox2, 1);
+                    Grid.SetColumn(textBox2, 2);
+
+                    mainGrid.ColumnDefinitions[0].MinWidth = 130;
+                    mainGrid.ColumnDefinitions[2].MinWidth = 130;
+
+                    Style style = new Style(typeof(GridSplitter));
+                    style.Setters.Add(new Setter(GridSplitter.BackgroundProperty, Brushes.Gray));
+                    Trigger tr = new Trigger();
+                    tr.Value = true;
+                    tr.Property = GridSplitter.IsMouseOverProperty;
+                    tr.Setters.Add(new Setter(GridSplitter.BackgroundProperty, Brushes.Black));
+                    style.Triggers.Add(tr);
+                    Trigger tr2 = new Trigger();
+                    tr2.Value = true;
+                    tr2.Property = GridSplitter.IsDraggingProperty;
+                    tr2.Setters.Add(new Setter(GridSplitter.WidthProperty, 1.0));
+                    tr2.Setters.Add(new Setter(GridSplitter.BorderThicknessProperty, new Thickness(0)));
+                    tr2.Setters.Add(new Setter(GridSplitter.MarginProperty, new Thickness(0)));
+                    style.Triggers.Add(tr2);
+
+                    GridSplitter splitter = new GridSplitter()
+                    {
+                        Opacity = 0.5,
+                        Width = 14,
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        VerticalAlignment = VerticalAlignment.Stretch,
+                        Style = style,
+                        ResizeBehavior = GridResizeBehavior.PreviousAndNext,
+                        BorderBrush = Brushes.Transparent,
+                        BorderThickness = new Thickness(4, 0, 8, 0),
+                        ShowsPreview = true,
+                        Margin = new Thickness(0, 0, 0, 15),
+                        ToolTip = "Double-click to reset",
+                    };
+                    ToolTipService.SetInitialShowDelay(splitter, 200);
+                    splitter.MouseDoubleClick += Splitter_MouseDoubleClick;
+                    GridSplitter splitter2 = new GridSplitter()
+                    {
+                        Opacity = 0.5,
+                        Width = 14,
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        VerticalAlignment = VerticalAlignment.Stretch,
+                        Style = style,
+                        BorderBrush = Brushes.Transparent,
+                        BorderThickness = new Thickness(8, 0, 4, 0),
+                        ResizeBehavior = GridResizeBehavior.PreviousAndNext,
+                        ShowsPreview = true,
+                        Margin = new Thickness(0, 0, 0, 15),
+                        ToolTip = "Double-click to reset",
+                    };
+                    ToolTipService.SetInitialShowDelay(splitter2, 200);
+                    splitter2.MouseDoubleClick += Splitter_MouseDoubleClick;
+                    mainGrid.Children.Add(splitter);
+                    mainGrid.Children.Add(splitter2);
+                    Grid.SetRow(splitter, 2);
+                    Grid.SetRow(splitter2, 2);
+                    Grid.SetColumn(splitter, 1);
+                    Grid.SetColumn(splitter2, 1);
+
+                    CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(unloadedServices.ItemsSource);
+                    view.Filter = Filter;
+                    CollectionView view2 = (CollectionView)CollectionViewSource.GetDefaultView(loadedServices.ItemsSource);
+                    view2.Filter = Filter2;
+                }
+            }
+
+            void Splitter_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+            {
+                mainGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+                mainGrid.ColumnDefinitions[2].Width = new GridLength(1, GridUnitType.Star);
+            }
+            void Tb_TextChanged(object sender, TextChangedEventArgs e)
+            {
+                ReloadFilters();
+            }
+            void ReloadFilters()
+            {
+                CollectionViewSource.GetDefaultView(unloadedServices.ItemsSource).Refresh();
+                CollectionViewSource.GetDefaultView(loadedServices.ItemsSource).Refresh();
+            }
+            bool Filter(object sender)
+            {
+                return
+                    string.IsNullOrEmpty(textBox.Text) ||
+                    textBox.Text == _search ||
+                     (sender as FabricationPartBrowser.Modules.Service).Name.ToLower().Contains(textBox.Text.ToLower());
+            }
+            bool Filter2(object sender)
+            {
+                return
+                    string.IsNullOrEmpty(textBox2.Text) ||
+                    textBox2.Text == _search ||
+                     (sender as FabricationPartBrowser.Modules.Service).Name.ToLower().Contains(textBox2.Text.ToLower());
+            }
+        }
+        public class ItemFoldersTreeView : TreeView
+        {
+            public static readonly DependencyProperty SelectedTreeViewItem_Property = DependencyProperty.Register(nameof(SelectedTreeViewItem), typeof(Item), typeof(ItemFoldersTreeView), (PropertyMetadata)new UIPropertyMetadata((PropertyChangedCallback)null));
+
+            public ItemFoldersTreeView() => this.SelectedItemChanged += new RoutedPropertyChangedEventHandler<object>(this.SelectedTreeViewItemChanged);
+
+            void SelectedTreeViewItemChanged(
+              object sender,
+              RoutedPropertyChangedEventArgs<object> e)
+            {
+                if (this.SelectedItem == null)
+                    return;
+                this.SetValue(ItemFoldersTreeView.SelectedTreeViewItem_Property, this.SelectedItem);
+            }
+
+            public Item SelectedTreeViewItem
+            {
+                get => this.GetValue(ItemFoldersTreeView.SelectedTreeViewItem_Property) as Item;
+                set => this.SetValue(ItemFoldersTreeView.SelectedTreeViewItem_Property, (object)value);
+            }
+        }
+    }
+
+#if (REVIT2025)
+    //2025
+#else
+    //implement Behavior
+    public class EventTriggerBehavior : Behavior<FrameworkElement>
+    {
+        public string EventName { get; set; }
+        public DelegateCommand Command { get; set; }
+
+        protected override void OnAttached()
+        {
+            EventInfo eventInfo = AssociatedObject.GetType().GetEvent(EventName);
+            if (eventInfo == null)
+                throw new InvalidOperationException($"Could not find any event named {EventName} on associated object.");
+            MethodInfo methodInfo = GetType().GetMethod("ExecuteCommand", BindingFlags.Instance | BindingFlags.NonPublic);
+            Delegate del = Delegate.CreateDelegate(eventInfo.EventHandlerType, this, methodInfo);
+            eventInfo.AddEventHandler(AssociatedObject, del);
+        }
+        void ExecuteCommand(object sender, EventArgs e)
+        {
+            if (Command.CanExecute(null))
+                Command.Execute(null);
+        }
+    }
+#endif
+    class SearchListTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate ItemFileTemplate { get; set; }
+        public DataTemplate ItemFolderTemplate { get; set; }
+
+        public override DataTemplate SelectTemplate(object item, DependencyObject container)
+        {
+            if (item is ItemFile)
+            {
+                return ItemFileTemplate;
+            }
+            else if (item is ItemFolder)
+            {
+                return ItemFolderTemplate;
+            }
+            return base.SelectTemplate(item, container);
         }
     }
 }
