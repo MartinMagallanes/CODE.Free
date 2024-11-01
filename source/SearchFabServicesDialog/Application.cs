@@ -32,45 +32,41 @@ namespace CODE.Free
     [UsedImplicitly]
     public class Application : ExternalApplication
     {
+        static string Image => "/CODE.Free;component/Resources/Icons/RibbonIcon16.png";
+        static string LargeImage => "/CODE.Free;component/Resources/Icons/RibbonIcon32.png";
+        static string TabName => "CODE";
         public override void OnStartup()
         {
             CheckIn.Hello(this);
-            //CreateRibbon();
+            CreateRibbon();
             new FabSettingsV2().Update();
         }
         void CreateRibbon()
         {
-            RevitCommandId cmd = RevitCommandId.LookupCommandId("ID_EXPORT_FABRICATION_PCF");
-            if (cmd != null)
-            {
-                UI.Popup($"can bind:{cmd.CanHaveBinding},has bind:{cmd.HasBinding},id:{cmd.Id},name:{cmd.Name}");
-                try
-                {
-                    UiApplication.RemoveAddInCommandBinding(cmd);
-                }
-                catch (Autodesk.Revit.Exceptions.InvalidOperationException)
-                {
+            //RevitCommandId cmd = RevitCommandId.LookupCommandId("ID_EXPORT_FABRICATION_PCF");
+            //if (cmd != null)
+            //{
+            //    UI.Popup($"can bind:{cmd.CanHaveBinding},has bind:{cmd.HasBinding},id:{cmd.Id},name:{cmd.Name}");
+            //    try
+            //    {
+            //        UiApplication.RemoveAddInCommandBinding(cmd);
+            //    }
+            //    catch (Autodesk.Revit.Exceptions.InvalidOperationException)
+            //    {
 
-                }
-                AddInCommandBinding b = UiApplication.CreateAddInCommandBinding(cmd);
-                if (b != null)
-                {
-                    //b.CanExecute += new EventHandler<CanExecuteEventArgs>(B_CanExecute);
-                    //b.Executed += new EventHandler<ExecutedEventArgs>(B_Executed);
-                }
-            }
+            //    }
+            //    AddInCommandBinding b = UiApplication.CreateAddInCommandBinding(cmd);
+            //    if (b != null)
+            //    {
+            //        //b.CanExecute += new EventHandler<CanExecuteEventArgs>(B_CanExecute);
+            //        //b.Executed += new EventHandler<ExecutedEventArgs>(B_Executed);
+            //    }
+            //}
 
-            //RibbonPanel panel = Application.CreatePanel(_panelName, _tabName);
-            //var btn = panel.AddPushButton<FabSettingsV2>(_btnText)
-            //    .SetImage(_img)
-            //    .SetLargeImage(_largeImg);
-            //btn.LongDescription = _description;
-
-            //var panel = Application.CreatePanel("Commands", "Tag3D");
-
-            //panel.AddPushButton<>("Execute")
-            //    .SetImage("/Tag3D;component/Resources/Icons/RibbonIcon16.png")
-            //    .SetLargeImage("/Tag3D;component/Resources/Icons/RibbonIcon32.png");
+            RibbonPanel panel = Application.CreatePanel("Free", TabName);
+            RibbonButton btn = panel.AddPushButton<Halloween>("Halloween\n\rTheme")
+                .SetLargeImage(LargeImage);
+            btn.LongDescription = "Update theme";
         }
         public override void OnShutdown()
         {

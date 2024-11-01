@@ -51,6 +51,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Page Remove="Resources\Halloween.xaml" />
+    </ItemGroup>
+
+    <ItemGroup>
       <EmbeddedResource Include="Resources\Icons\AddAll.png" />
       <EmbeddedResource Include="Resources\Icons\Code Icon.ico">
         <CopyToOutputDirectory>Never</CopyToOutputDirectory>
@@ -71,6 +75,10 @@
 	<ItemGroup>
 		<Reference Include="AdWindows">
 		  <HintPath>C:\Program Files\Autodesk\Revit 2021\AdWindows.dll</HintPath>
+		  <Private>False</Private>
+		</Reference>
+		<Reference Include="Autodesk.UI.Themes">
+		  <HintPath>C:\Program Files\Autodesk\Revit 2024\Autodesk.UI.Themes.dll</HintPath>
 		  <Private>False</Private>
 		</Reference>
 		<Reference Include="Autodesk.UI.Windows">
@@ -104,6 +112,9 @@
 			<SpecificVersion>False</SpecificVersion>
 		</Reference>
 		<Reference Include="WindowsFormsIntegration" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Resource Include="Resources\Halloween.xaml" />
 	</ItemGroup>
 
     <ItemGroup>

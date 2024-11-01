@@ -1,0 +1,603 @@
+﻿<ResourceDictionary
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:pso="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
+	xmlns:ad="clr-namespace:Autodesk.Windows;assembly=AdWindows"
+	xmlns:adi="clr-namespace:Autodesk.Internal.Windows;assembly=AdWindows"
+	xmlns:adp="clr-namespace:Autodesk.Private.Windows;assembly=AdWindows"
+	xmlns:tbi="clr-namespace:Autodesk.Internal.Windows.ToolBars;assembly=AdWindows"
+	xmlns:system="clr-namespace:System;assembly=mscorlib"
+	xmlns:local="clr-namespace:UIFramework;assembly=UIFramework"
+	x:Uid="ResourceDictionary_Halloween">
+    <!--#region NewRegion -->
+    <Color
+		x:Key="DarkChromeForegroundColor">#FFF0F0F0</Color>
+    <Color
+		x:Key="DarkChromeBackgroundColor">#FF333333</Color>
+    <Color
+		x:Key="LightChromeForegroundColor">#FFF0F0F0</Color>
+    <Color
+		x:Key="LightChromeBackgroundColor">#FF666666</Color>
+    <Color
+		x:Key="LightChromeBorderColor">#FF999999</Color>
+    <Color
+		x:Key="RibbonPanelBackgroundColor">#FFEEEEEE</Color>
+    <Color
+		x:Key="RibbonPanelSeparatorColor">#FFDDDDDD</Color>
+    <Color
+		x:Key="RibbonTabRollOverColor">#3FFFFFFF</Color>
+    <Color
+		x:Key="AppButtonBackgroundColor">#ffba66</Color>
+    <Color
+		x:Key="AppButtonHoverBackgroundColor">#FFFFA336</Color>
+    <Color
+		x:Key="AppButtonPressedBackgroundColor">#ffd199</Color>
+    <Color
+		x:Key="ActiveTabBackgroundColor">#FF666666</Color>
+    <Color
+		x:Key="ActiveTabForegroundColor">#FFFFA336</Color>
+    <Color
+		x:Key="SelectedTabRollOverColor">#DFFFFFFF</Color>
+    <Color
+		x:Key="DisabledTabForegroundColor">#55383838</Color>
+    <LinearGradientBrush
+		x:Key="DarkChromeBackgroundGradientBrush"
+		pso:Freeze="True"
+		x:Uid="DarkChromeBackgroundGradientBrush"
+		StartPoint="0,0"
+		EndPoint="0,1">
+        <GradientStop
+			x:Uid="GradientStop_1"
+			Offset="0"
+			Color="{StaticResource DarkChromeBackgroundColor}" />
+        <GradientStop
+			x:Uid="GradientStop_2"
+			Offset="1"
+			Color="{StaticResource DarkChromeBackgroundColor}" />
+    </LinearGradientBrush>
+    <LinearGradientBrush
+		x:Key="LightChromeBackgroundGradientBrush"
+		pso:Freeze="True"
+		x:Uid="LightChromeBackgroundGradientBrush"
+		StartPoint="0,0"
+		EndPoint="0,1">
+        <GradientStop
+			x:Uid="GradientStop_3"
+			Offset="0"
+			Color="{StaticResource LightChromeBackgroundColor}" />
+        <GradientStop
+			x:Uid="GradientStop_4"
+			Offset="1"
+			Color="{StaticResource LightChromeBackgroundColor}" />
+    </LinearGradientBrush>
+    <SolidColorBrush
+		x:Key="DarkChromeBackgroundBrush"
+		pso:Freeze="True"
+		x:Uid="DarkChromeBackgroundBrush"
+		Color="{StaticResource DarkChromeBackgroundColor}" />
+    <SolidColorBrush
+		x:Key="LightChromeBackgroundBrush"
+		pso:Freeze="True"
+		x:Uid="LightChromeBackgroundBrush"
+		Color="{StaticResource LightChromeBackgroundColor}" />
+    <SolidColorBrush
+		x:Key="DarkChromeForegroundBrush"
+		pso:Freeze="True"
+		x:Uid="DarkChromeForegroundBrush"
+		Color="{StaticResource DarkChromeForegroundColor}" />
+    <SolidColorBrush
+		x:Key="LightChromeForegroundBrush"
+		pso:Freeze="True"
+		x:Uid="LightChromeForegroundBrush"
+		Color="{StaticResource LightChromeForegroundColor}" />
+    <SolidColorBrush
+		x:Key="RibbonPanelBackgroundBrush"
+		pso:Freeze="True"
+		x:Uid="RibbonPanelBackgroundBrush"
+		Color="{StaticResource RibbonPanelBackgroundColor}" />
+    <LinearGradientBrush
+		x:Key="RibbonPanelBackgroundGradientBrush"
+		pso:Freeze="True"
+		x:Uid="RibbonPanelBackgroundGradientBrush"
+		StartPoint="0,0"
+		EndPoint="0,1">
+        <GradientStop
+			x:Uid="GradientStop_5"
+			Offset="0"
+			Color="{StaticResource RibbonPanelBackgroundColor}" />
+        <GradientStop
+			x:Uid="GradientStop_6"
+			Offset="1"
+			Color="{StaticResource RibbonPanelBackgroundColor}" />
+    </LinearGradientBrush>
+    <LinearGradientBrush
+		x:Key="RibbonTabRolloverBrush"
+		pso:Freeze="True"
+		x:Uid="RibbonTabRolloverBrush"
+		StartPoint="0,0"
+		EndPoint="0,1">
+        <GradientStop
+			x:Uid="GradientStop_5"
+			Offset="0"
+			Color="{StaticResource RibbonTabRollOverColor}" />
+        <GradientStop
+			x:Uid="GradientStop_6"
+			Offset="1"
+			Color="{StaticResource RibbonTabRollOverColor}" />
+    </LinearGradientBrush>
+    <SolidColorBrush
+		x:Key="RibbonPanelSeparatorBrush"
+		pso:Freeze="True"
+		x:Uid="RibbonPanelSeparatorBrush"
+		Color="{StaticResource RibbonPanelSeparatorColor}" />
+    <Color
+		x:Key="ChromeForegroundColor_DarkTheme">#FFFFFFFF</Color>
+    <Color
+		x:Key="ChromeBackgroundColor_DarkTheme">#FF3C3C3C</Color>
+    <Color
+		x:Key="RibbonPanelSeparatorColor_DarkTheme">#FF4D4D4D</Color>
+    <Color
+		x:Key="RibbonPanelBackgroundColor_DarkTheme">#FF666666</Color>
+    <Color
+		x:Key="RibbonTabRollOverColor_DarkTheme">#1FFFFFFF</Color>
+    <Color
+		x:Key="DisabledForegroundColor_DarkTheme">#FFCCCCCC</Color>
+    <Color
+		x:Key="RibbonButtonActiveBorderColor_DarkTheme">#FF024B6C</Color>
+    <Color
+		x:Key="RibbonButtonActiveBackgroundColor_DarkTheme">#FF0584BD</Color>
+    <Color
+		x:Key="RibbonButtonRolloverColor_DarkTheme">#FF0696D7</Color>
+    <Color
+		x:Key="RibbonListButtonRolloverColor_DarkTheme">#FF38ABDF</Color>
+    <Color
+		x:Key="RibbonButtonActiveRolloverBackgroundColor_DarkTheme">#FF0696D7</Color>
+    <Color
+		x:Key="CheckBoxBackgroundColor_DarkTheme">#FF666666</Color>
+    <Color
+		x:Key="CheckBoxBorderColor_DarkTheme">#FF4D4D4D</Color>
+    <Color
+		x:Key="TextBoxBackgroundColor_DarkTheme">#FF808080</Color>
+    <Color
+		x:Key="ListHeaderBackgroundColor_DarkTheme">#FF4D4D4D</Color>
+    <SolidColorBrush
+		x:Key="ChromeForegroundBrush_DarkTheme"
+		pso:Freeze="True"
+		x:Uid="ChromeForegroundBrush_DarkTheme"
+		Color="{StaticResource ChromeForegroundColor_DarkTheme}" />
+    <SolidColorBrush
+		x:Key="ChromeBackgroundBrush_DarkTheme"
+		pso:Freeze="True"
+		x:Uid="ChromeBackgroundBrush_DarkTheme"
+		Color="{StaticResource ChromeBackgroundColor_DarkTheme}" />
+    <LinearGradientBrush
+		x:Key="ChromeBackgroundGradientBrush_DarkTheme"
+		pso:Freeze="True"
+		x:Uid="ChromeBackgroundGradientBrush_DarkTheme"
+		StartPoint="0,0"
+		EndPoint="0,1">
+        <GradientStop
+			x:Uid="GradientStop_5"
+			Offset="0"
+			Color="{StaticResource ChromeBackgroundColor_DarkTheme}" />
+        <GradientStop
+			x:Uid="GradientStop_6"
+			Offset="1"
+			Color="{StaticResource ChromeBackgroundColor_DarkTheme}" />
+    </LinearGradientBrush>
+    <SolidColorBrush
+		x:Key="RibbonPanelBackgroundBrush_DarkTheme"
+		pso:Freeze="True"
+		x:Uid="RibbonPanelBackgroundBrush_DarkTheme"
+		Color="{StaticResource RibbonPanelBackgroundColor_DarkTheme}" />
+    <LinearGradientBrush
+		x:Key="RibbonPanelBackgroundGradientBrush_DarkTheme"
+		pso:Freeze="True"
+		x:Uid="RibbonPanelBackgroundGradientBrush_DarkTheme"
+		StartPoint="0,0"
+		EndPoint="0,1">
+        <GradientStop
+			x:Uid="GradientStop_5"
+			Offset="0"
+			Color="{StaticResource RibbonPanelBackgroundColor_DarkTheme}" />
+        <GradientStop
+			x:Uid="GradientStop_6"
+			Offset="1"
+			Color="{StaticResource RibbonPanelBackgroundColor_DarkTheme}" />
+    </LinearGradientBrush>
+    <SolidColorBrush
+		x:Key="RibbonPanelSeparatorBrush_DarkTheme"
+		pso:Freeze="True"
+		x:Uid="RibbonPanelSeparatorBrush_DarkTheme"
+		Color="{StaticResource RibbonPanelSeparatorColor_DarkTheme}" />
+    <SolidColorBrush
+		x:Key="RibbonTransparentBrush_DarkTheme"
+		pso:Freeze="True"
+		x:Uid="RibbonTransparentBrush_DarkTheme"
+		Color="Transparent" />
+    <LinearGradientBrush
+		x:Key="RibbonTabRolloverBrush_DarkTheme"
+		pso:Freeze="True"
+		x:Uid="RibbonTabRolloverBrush_DarkTheme"
+		StartPoint="0,0"
+		EndPoint="0,1">
+        <GradientStop
+			x:Uid="GradientStop_5"
+			Offset="0"
+			Color="{StaticResource RibbonTabRollOverColor_DarkTheme}" />
+        <GradientStop
+			x:Uid="GradientStop_6"
+			Offset="1"
+			Color="{StaticResource RibbonTabRollOverColor_DarkTheme}" />
+    </LinearGradientBrush>
+    <SolidColorBrush
+		x:Key="DisabledForegroundBrush_DarkTheme"
+		pso:Freeze="True"
+		x:Uid="DisabledForegroundBrush_DarkTheme"
+		Color="{StaticResource DisabledForegroundColor_DarkTheme}" />
+    <SolidColorBrush
+		x:Key="TextPromptForegroundBrush_DarkTheme"
+		pso:Freeze="True"
+		x:Uid="TextPromptForegroundBrush_DarkTheme"
+		Color="{StaticResource DisabledForegroundColor_DarkTheme}" />
+    <SolidColorBrush
+		x:Key="RibbonButtonBorderBrush_DarkTheme"
+		pso:Freeze="True"
+		x:Uid="RibbonButtonBorderBrush_DarkTheme"
+		Color="{StaticResource ChromeBackgroundColor_DarkTheme}" />
+    <SolidColorBrush
+		x:Key="RibbonButtonBorderBrush_Invisible"
+		pso:Freeze="True"
+		x:Uid="RibbonButtonBorderBrush_Invisible"
+		Color="Transparent" />
+    <SolidColorBrush
+		x:Key="RibbonButtonRolloverBrush_DarkTheme"
+		pso:Freeze="True"
+		x:Uid="RibbonButtonRolloverBrush_DarkTheme"
+		Color="{StaticResource RibbonButtonRolloverColor_DarkTheme}" />
+    <SolidColorBrush
+		x:Key="RibbonListButtonRolloverBrush_DarkTheme"
+		pso:Freeze="True"
+		x:Uid="RibbonListButtonRolloverBrush_DarkTheme"
+		Color="{StaticResource RibbonListButtonRolloverColor_DarkTheme}" />
+    <SolidColorBrush
+		x:Key="RibbonButtonActiveBorderBrush_DarkTheme"
+		pso:Freeze="True"
+		x:Uid="RibbonButtonActiveBorderBrush_DarkTheme"
+		Color="{StaticResource RibbonButtonActiveBorderColor_DarkTheme}" />
+    <SolidColorBrush
+		x:Key="RibbonButtonActiveBackgroundBrush_DarkTheme"
+		pso:Freeze="True"
+		x:Uid="RibbonButtonActiveBackgroundBrush_DarkTheme"
+		Color="{StaticResource RibbonButtonActiveBackgroundColor_DarkTheme}" />
+    <SolidColorBrush
+		x:Key="RibbonButtonActiveRolloverBackgroundBrush_DarkTheme"
+		pso:Freeze="True"
+		x:Uid="RibbonButtonActiveRolloverBackgroundBrush_DarkTheme"
+		Color="{StaticResource RibbonButtonActiveRolloverBackgroundColor_DarkTheme}" />
+    <SolidColorBrush
+		x:Key="CheckBoxBorderBrush_DarkTheme"
+		pso:Freeze="True"
+		x:Uid="CheckBoxBorderBrush_DarkTheme"
+		Color="{StaticResource CheckBoxBorderColor_DarkTheme}" />
+    <SolidColorBrush
+		x:Key="CheckBoxBackgroundBrush_DarkTheme"
+		pso:Freeze="True"
+		x:Uid="CheckBoxBackgroundBrush_DarkTheme"
+		Color="{StaticResource CheckBoxBackgroundColor_DarkTheme}" />
+    <SolidColorBrush
+		x:Key="TextBoxBackgroundBrush_DarkTheme"
+		pso:Freeze="True"
+		x:Uid="TextBoxBackgroundBrush_DarkTheme"
+		Color="{StaticResource TextBoxBackgroundColor_DarkTheme}" />
+    <SolidColorBrush
+		x:Key="ListHeaderBackgroundBrush_DarkTheme"
+		pso:Freeze="True"
+		x:Uid="ListHeaderBackgroundBrush_DarkTheme"
+		Color="{StaticResource ListHeaderBackgroundColor_DarkTheme}" />
+    <DrawingBrush
+		x:Key="RibbonPanelDialogBoxLauncherBrush"
+		pso:Freeze="True"
+		x:Uid="DrawingBrush_1">
+        <DrawingBrush.Drawing>
+            <DrawingGroup
+				x:Uid="DrawingGroup_1">
+                <DrawingGroup.Children>
+                    <GeometryDrawing
+						x:Uid="GeometryDrawing_1"
+						Geometry="F1 M1.64501,5.03041 L5.1658,5.01906 L5.16572,1.54689">
+                        <GeometryDrawing.Pen>
+                            <Pen
+								x:Uid="Pen_1"
+								MiterLimit="2.75"
+								Brush="#FFFFFFFF" />
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                    <GeometryDrawing
+						x:Uid="GeometryDrawing_2"
+						Geometry="F1 M1.68778,1.54187 L5.02783,4.88177">
+                        <GeometryDrawing.Pen>
+                            <Pen
+								x:Uid="Pen_2"
+								MiterLimit="2.75"
+								Brush="#FFFFFFFF" />
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup.Children>
+            </DrawingGroup>
+        </DrawingBrush.Drawing>
+    </DrawingBrush>
+    <BitmapImage
+		x:Key="CheckBoxCheckedImage_DarkTheme"
+		pso:Freeze="True"
+		x:Uid="CheckBoxCheckedImage_DarkTheme"
+		UriSource="../Resources/Images/Ribbon_Checkbox_Checked_DarkTheme.png" />
+    <BitmapImage
+		x:Key="CheckBoxIndeterminateImage_DarkTheme"
+		pso:Freeze="True"
+		x:Uid="CheckBoxIndeterminateImage_DarkTheme"
+		UriSource="../Resources/Images/Ribbon_Checkbox_Indeterminate_DarkTheme.png" />
+    <BitmapImage
+		x:Key="ToolBarStyleButtonListCheckedImage_DarkTheme"
+		pso:Freeze="True"
+		x:Uid="ToolBarStyleButtonListCheckedImage_DarkTheme"
+		UriSource="../Resources/Images/ToolBar_Check_DarkTheme.ico" />
+    <!--#endregion-->
+
+    <adi:Theme
+		x:Key="FullDarkTheme"
+		x:Uid="FullDarkTheme"
+		Name="Dark">
+        <adi:Theme.Ribbon>
+            <adi:RibbonTheme
+				x:Uid="DarkTheme_RibbonTheme"
+				PanelBarBackground="{StaticResource ChromeBackgroundGradientBrush_DarkTheme}"
+				TabBarBorder="{StaticResource ChromeBackgroundBrush_DarkTheme}"
+				TabBarBackground="{StaticResource ChromeBackgroundBrush_DarkTheme}"
+				TabBarBackgroundFloating="{StaticResource ChromeBackgroundBrush_DarkTheme}"
+				PanelOuterBorder="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
+				MinimizeButtonArrowBrush="{StaticResource ChromeForegroundBrush_DarkTheme}"
+				TabOverflowArrowIdleBrush="{StaticResource ChromeForegroundBrush_DarkTheme}"
+				TabOverflowArrowHighlightBrush="{StaticResource ChromeForegroundBrush_DarkTheme}">
+                <adi:RibbonTheme.MainTab>
+                    <adi:TabTheme
+						x:Uid="DarkTheme_RibbonTheme_MainTab_TabTheme"
+						TabHeaderBackground="{StaticResource ChromeBackgroundBrush_DarkTheme}"
+						TabHeaderForeground="{StaticResource ChromeForegroundBrush_DarkTheme}"
+						SelectedTabHeaderForeground="{StaticResource ChromeForegroundBrush_DarkTheme}"
+						SelectedTabHeaderBackground="{StaticResource RibbonPanelBackgroundGradientBrush_DarkTheme}"
+						SelectedTabHeaderBorder="{StaticResource RibbonPanelBackgroundGradientBrush_DarkTheme}"
+						RolloverTabHeaderForeground="{StaticResource ChromeForegroundBrush_DarkTheme}"
+						RolloverTabHeaderBackground="{StaticResource RibbonTabRolloverBrush_DarkTheme}"
+						RolloverTabHeaderBorder="{StaticResource RibbonTabRolloverBrush_DarkTheme}"
+						PanelTitleBackground="{StaticResource RibbonPanelBackgroundGradientBrush_DarkTheme}"
+						PanelTitleForeground="{StaticResource ChromeForegroundBrush_DarkTheme}"
+						PanelTitleBorderBrushVertical="{StaticResource RibbonTransparentBrush_DarkTheme}"
+						PanelContentBackground="{StaticResource RibbonPanelBackgroundGradientBrush_DarkTheme}"
+						OuterBorder="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
+						InnerBorder="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
+						PanelBorder="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
+						PanelBackground="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
+						PanelBackgroundVerticalLeft="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
+						PanelBackgroundVerticalRight="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
+						PanelSeparatorBrush="{StaticResource RibbonPanelSeparatorBrush_DarkTheme}"
+						PanelDialogBoxLauncherBrush="{StaticResource RibbonPanelDialogBoxLauncherBrush}"
+						SlideoutPanelBorder="{StaticResource ChromeBackgroundBrush_DarkTheme}"
+						SlideoutPanelSeparatorColor="{StaticResource RibbonTransparentBrush_DarkTheme}"
+						OverflowTabPanelForeground="{StaticResource ChromeForegroundBrush_DarkTheme}"
+						OverflowTabPanelBackground="{StaticResource ChromeBackgroundBrush_DarkTheme}"
+						OverflowTabPanelBorderBrush="{StaticResource ChromeBackgroundBrush_DarkTheme}" />
+                </adi:RibbonTheme.MainTab>
+                <adi:RibbonTheme.ItemStyle>
+                    <adi:RibbonItemStyle
+						x:Uid="DarkTheme_RibbonTheme_ItemStyle_RibbonItemStyle"
+						TextForeground="{StaticResource ChromeForegroundBrush_DarkTheme}"
+						RibbonTextBoxPromptForeground="{StaticResource TextPromptForegroundBrush_DarkTheme}"
+						DisabledTextForeground="{StaticResource DisabledForegroundBrush_DarkTheme}"
+						StandardButtonBorderBrush="{StaticResource RibbonButtonBorderBrush_DarkTheme}"
+						StandardButtonWithTextBorderBrush="{StaticResource RibbonButtonBorderBrush_Invisible}"
+						StandardButtonBackground="{StaticResource RibbonPanelBackgroundGradientBrush_DarkTheme}"
+						LargeButtonBorderBrush="{StaticResource RibbonButtonBorderBrush_Invisible}"
+						ComboBoxBackgroundBrush="{StaticResource RibbonPanelBackgroundGradientBrush_DarkTheme}"
+						ComboBoxBorderBrush="{StaticResource RibbonButtonBorderBrush_DarkTheme}"
+						PressedButtonBorderBrush="{StaticResource RibbonButtonBorderBrush_DarkTheme}"
+						PressedButtonBackgroundBrush="{StaticResource RibbonButtonActiveBackgroundBrush_DarkTheme}"
+						RollOverButtonBorderBrush="{StaticResource RibbonButtonBorderBrush_DarkTheme}"
+						RollOverButtonBackgroundBrush="{StaticResource RibbonButtonRolloverBrush_DarkTheme}"
+						RollOverListButtonBackgroundBrush="{StaticResource RibbonListButtonRolloverBrush_DarkTheme}"
+						ActiveButtonBorderBrush="{StaticResource RibbonButtonActiveBorderBrush_DarkTheme}"
+						ActiveButtonBackgroundBrush="{StaticResource RibbonButtonActiveBackgroundBrush_DarkTheme}"
+						RollOverActiveButtonBorderBrush="{StaticResource RibbonButtonActiveBorderBrush_DarkTheme}"
+						RollOverActiveButtonBackgroundBrush="{StaticResource RibbonButtonActiveRolloverBackgroundBrush_DarkTheme}"
+						VerticalScrollbarThumbFillBrush="{StaticResource ChromeBackgroundBrush_DarkTheme}"
+						CheckBoxBorderBrush="{StaticResource CheckBoxBorderBrush_DarkTheme}"
+						CheckBoxBackGroundBrush="{StaticResource CheckBoxBackgroundBrush_DarkTheme}"
+						VerticalScrollbarThumbRolloverGradientBrush="{StaticResource RibbonPanelBackgroundGradientBrush_DarkTheme}"
+						VerticalScrollbarThumbRolloverBorderBrush="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
+						SeparatorBrush="{StaticResource RibbonPanelSeparatorBrush_DarkTheme}"
+						ArrowBrush="{StaticResource ChromeForegroundBrush_DarkTheme}"
+						ComboBoxArrowBrush="{StaticResource ChromeForegroundBrush_DarkTheme}"
+						SliderBorderBrush="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
+						SliderBackground="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
+						SliderTickBrush="{StaticResource RibbonPanelSeparatorBrush_DarkTheme}"
+						SliderThumbBrush="{StaticResource RibbonPanelSeparatorBrush_DarkTheme}"
+						SliderThumbInactiveBrush="{StaticResource DisabledForegroundBrush_DarkTheme}"
+						SliderTextForegroundBrush="{StaticResource ChromeForegroundBrush_DarkTheme}"
+						SliderTextBoxBorderBrush="{StaticResource RibbonButtonBorderBrush_DarkTheme}"
+						SliderTextBoxBackgroundBrush="{StaticResource RibbonPanelBackgroundGradientBrush_DarkTheme}"
+						GalleryBackgroundFillBrush="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
+						GalleryOutermostBorderBrush="{StaticResource RibbonButtonBorderBrush_DarkTheme}"
+						ListHeaderBackgroundBrush="{StaticResource ListHeaderBackgroundBrush_DarkTheme}"
+						SpinnerBorderBrush="{StaticResource RibbonButtonBorderBrush_DarkTheme}"
+						SpinnerButtonArrowBrush="{StaticResource ChromeForegroundBrush_DarkTheme}"
+						ComboBoxDropDownBorderBrush="{StaticResource RibbonButtonBorderBrush_DarkTheme}"
+						ComboBoxDropDownBackgroundBrush="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
+						ResizeControlBorderBrush="{StaticResource RibbonButtonBorderBrush_DarkTheme}"
+						ResizeControlBackgroundBrush="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
+						MenuItemListBoxBorderBrush="{StaticResource RibbonButtonBorderBrush_DarkTheme}"
+						MenuItemListBoxBackgroundBrush="{StaticResource RibbonPanelBackgroundBrush}"
+						DropDownListBoxBorderBrush="{StaticResource RibbonButtonBorderBrush_DarkTheme}"
+						DropDownListBoxBackgroundBrush="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
+						TextBoxForeground="{StaticResource ChromeForegroundBrush_DarkTheme}"
+						TextBoxBackground="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
+						TextBoxBorderBrush="{StaticResource RibbonButtonBorderBrush_DarkTheme}"
+						DisabledTextBoxBackground="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
+						CheckBoxCheckedImage="{StaticResource CheckBoxCheckedImage_DarkTheme}"
+						CheckBoxIndeterminateImage="{StaticResource CheckBoxIndeterminateImage_DarkTheme}" />
+                </adi:RibbonTheme.ItemStyle>
+            </adi:RibbonTheme>
+        </adi:Theme.Ribbon>
+        <adi:Theme.ToolbarItem>
+            <adi:ToolBarItemTheme
+				x:Uid="DarkTheme_ToolbarItem_ToolBarItemTheme">
+                <adi:ToolBarItemTheme.QuickAccessToolBarItemStyle>
+                    <adi:RibbonItemStyle
+						x:Uid="DarkTheme_ToolbarItem_ToolBarItemTheme_QuickAccessToolBarItemStyle_RibbonItemStyle"
+						ItemSize="Standard"
+						ItemOrientation="Horizontal"
+						UseMinWidthAsStartingWidth="True"
+						StandardButtonBackground="#00FFFFFF"
+						CollapsedSize="Standard"
+						IsCollapsed="True"
+						IsItemTextVisible="False"
+						LoginTextForeground="{StaticResource ChromeForegroundBrush_DarkTheme}"
+						TextForeground="{StaticResource ChromeForegroundBrush_DarkTheme}"
+						RibbonTextBoxPromptForeground="{StaticResource TextPromptForegroundBrush_DarkTheme}"
+						DisabledTextForeground="{StaticResource DisabledForegroundBrush_DarkTheme}"
+						StandardButtonBorderBrush="{StaticResource RibbonButtonBorderBrush_Invisible}"
+						StandardButtonWithTextBorderBrush="{StaticResource RibbonButtonBorderBrush_Invisible}"
+						LargeButtonBorderBrush="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
+						ComboBoxBackgroundBrush="{StaticResource CheckBoxBorderBrush_DarkTheme}"
+						ComboBoxBorderBrush="{StaticResource CheckBoxBackgroundBrush_DarkTheme}"
+						PressedButtonBorderBrush="{StaticResource RibbonButtonBorderBrush_DarkTheme}"
+						PressedButtonBackgroundBrush="{StaticResource RibbonButtonActiveBackgroundBrush_DarkTheme}"
+						RollOverButtonBorderBrush="{StaticResource RibbonButtonBorderBrush_DarkTheme}"
+						RollOverButtonBackgroundBrush="{StaticResource RibbonButtonRolloverBrush_DarkTheme}"
+						RollOverListButtonBackgroundBrush="{StaticResource RibbonListButtonRolloverBrush_DarkTheme}"
+						ActiveButtonBorderBrush="{StaticResource RibbonButtonActiveBorderBrush_DarkTheme}"
+						ActiveButtonBackgroundBrush="{StaticResource RibbonButtonActiveBackgroundBrush_DarkTheme}"
+						RollOverActiveButtonBorderBrush="{StaticResource RibbonButtonActiveBorderBrush_DarkTheme}"
+						RollOverActiveButtonBackgroundBrush="{StaticResource RibbonButtonActiveRolloverBackgroundBrush_DarkTheme}"
+						VerticalScrollbarThumbFillBrush="{StaticResource ChromeBackgroundBrush_DarkTheme}"
+						CheckBoxBorderBrush="{StaticResource RibbonButtonBorderBrush_DarkTheme}"
+						CheckBoxBackGroundBrush="{StaticResource CheckBoxBackgroundBrush_DarkTheme}"
+						VerticalScrollbarThumbRolloverGradientBrush="{StaticResource RibbonPanelBackgroundGradientBrush_DarkTheme}"
+						VerticalScrollbarThumbRolloverBorderBrush="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
+						SeparatorBrush="{StaticResource RibbonPanelSeparatorBrush_DarkTheme}"
+						ArrowBrush="{StaticResource ChromeForegroundBrush_DarkTheme}"
+						ComboBoxArrowBrush="{StaticResource ChromeForegroundBrush_DarkTheme}"
+						SliderBorderBrush="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
+						SliderBackground="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
+						SliderTickBrush="{StaticResource RibbonPanelSeparatorBrush_DarkTheme}"
+						SliderThumbBrush="{StaticResource RibbonPanelSeparatorBrush_DarkTheme}"
+						SliderThumbInactiveBrush="{StaticResource DisabledForegroundBrush_DarkTheme}"
+						SliderTextForegroundBrush="{StaticResource ChromeForegroundBrush_DarkTheme}"
+						SliderTextBoxBorderBrush="{StaticResource RibbonButtonBorderBrush_DarkTheme}"
+						SliderTextBoxBackgroundBrush="{StaticResource RibbonPanelBackgroundGradientBrush_DarkTheme}"
+						GalleryBackgroundFillBrush="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
+						ListHeaderBackgroundBrush="{StaticResource ListHeaderBackgroundBrush_DarkTheme}"
+						SpinnerBorderBrush="{StaticResource RibbonButtonBorderBrush_DarkTheme}"
+						SpinnerButtonArrowBrush="{StaticResource ChromeForegroundBrush_DarkTheme}"
+						ComboBoxDropDownBorderBrush="{StaticResource RibbonButtonBorderBrush_DarkTheme}"
+						ComboBoxDropDownBackgroundBrush="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
+						ResizeControlBorderBrush="{StaticResource RibbonButtonBorderBrush_DarkTheme}"
+						ResizeControlBackgroundBrush="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
+						MenuItemListBoxBorderBrush="{StaticResource RibbonButtonBorderBrush_DarkTheme}"
+						MenuItemListBoxBackgroundBrush="{StaticResource RibbonPanelBackgroundBrush}"
+						GalleryOutermostBorderBrush="{StaticResource RibbonButtonBorderBrush_DarkTheme}"
+						DropDownListBoxBorderBrush="{StaticResource RibbonButtonBorderBrush_DarkTheme}"
+						DropDownListBoxBackgroundBrush="{StaticResource ChromeBackgroundBrush_DarkTheme}"
+						TextBoxForeground="{StaticResource ChromeForegroundBrush_DarkTheme}"
+						TextBoxBackground="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
+						TextBoxBorderBrush="{StaticResource RibbonButtonBorderBrush_DarkTheme}"
+						CheckBoxCheckedImage="{StaticResource CheckBoxCheckedImage_DarkTheme}"
+						CheckBoxIndeterminateImage="{StaticResource CheckBoxIndeterminateImage_DarkTheme}"
+						ToolBarStyleButtonListBoxBackground="{StaticResource ChromeBackgroundBrush_DarkTheme}"
+						ToolBarStyleMenuTextBlockBackground="{StaticResource ChromeBackgroundBrush_DarkTheme}"
+						ToolBarStyleButtonListCheckedItemImage="{StaticResource ToolBarStyleButtonListCheckedImage_DarkTheme}" />
+                </adi:ToolBarItemTheme.QuickAccessToolBarItemStyle>
+            </adi:ToolBarItemTheme>
+        </adi:Theme.ToolbarItem>
+    </adi:Theme>
+    <ResourceDictionary
+		x:Key="RevitThemeDictionary2"
+		x:Uid="local:RevitThemeDictionary_1">
+        <local:ApplicationTheme
+			x:Uid="local:ApplicationTheme_1"
+			x:Key="Dark2"
+			WindowButtonHoverForegroundColor="#FF303030"
+			WindowButtonHoverBackgroundColor="#FFCCEAF9"
+			WindowButtonHoverBorderColor="#FFCCEAF9"
+			WindowButtonPressedForegroundColor="#FFCCEAF9"
+			WindowButtonPressedBackgroundColor="#FFB9D7F3"
+			WindowButtonPressedBorderColor="#FFCCEAF9"
+			RibbonTheme="{x:Static adi:Themes.Dark}"
+			WindowButtonForegroundColor="{StaticResource DarkChromeForegroundColor}"
+			WindowButtonBackgroundColor="{StaticResource DarkChromeBackgroundColor}"
+			WindowButtonBorderColor="{StaticResource DarkChromeBackgroundColor}"
+			ActiveTabBackgroundColor="{StaticResource ActiveTabBackgroundColor}"
+			ActiveTabForegroundColor="{StaticResource ActiveTabForegroundColor}"
+			TabRolloverBackgroundColor="{StaticResource RibbonTabRollOverColor}"
+			SelectedTabRolloverBackgroundColor="{StaticResource SelectedTabRollOverColor}"
+			DisabledTabForegroundColor="{StaticResource DisabledTabForegroundColor}"
+			ChromeBackgroundBrush="{StaticResource DarkChromeBackgroundBrush}"
+			ChromeBackgroundGradientBrush="{StaticResource DarkChromeBackgroundGradientBrush}"
+			ChromeForegroundBrush="{StaticResource DarkChromeForegroundBrush}"
+			RibbonPanelBackgroundBrush="{StaticResource RibbonPanelBackgroundBrush}"
+			RibbonPanelBackgroundGradientBrush="{StaticResource RibbonPanelBackgroundGradientBrush}"
+			RibbonTabRolloverBrush="{StaticResource RibbonTabRolloverBrush}"
+			RibbonPanelSeparatorBrush="{StaticResource RibbonPanelSeparatorBrush}" />
+        <!--
+        <local:ApplicationTheme
+			x:Uid="local:ApplicationTheme_2"
+			x:Key="Light"
+			WindowButtonHoverForegroundColor="#FF303030"
+			WindowButtonHoverBackgroundColor="#FFC8E9F8"
+			WindowButtonHoverBorderColor="#FF0160BF"
+			WindowButtonPressedForegroundColor="#FF303030"
+			WindowButtonPressedBackgroundColor="#FFBFDAF3"
+			WindowButtonPressedBorderColor="#FF0160BF"
+			RibbonTheme="{x:Static adi:Themes.Light}"
+			WindowButtonForegroundColor="{StaticResource LightChromeForegroundColor}"
+			WindowButtonBackgroundColor="{StaticResource LightChromeBackgroundColor}"
+			WindowButtonBorderColor="{StaticResource LightChromeBackgroundColor}"
+			ActiveTabBackgroundColor="{StaticResource ActiveTabBackgroundColor}"
+			ActiveTabForegroundColor="{StaticResource ActiveTabForegroundColor}"
+			TabRolloverBackgroundColor="{StaticResource RibbonTabRollOverColor}"
+			SelectedTabRolloverBackgroundColor="{StaticResource SelectedTabRollOverColor}"
+			DisabledTabForegroundColor="{StaticResource DisabledTabForegroundColor}"
+			ChromeBackgroundBrush="{StaticResource LightChromeBackgroundBrush}"
+			ChromeBackgroundGradientBrush="{StaticResource LightChromeBackgroundGradientBrush}"
+			ChromeForegroundBrush="{StaticResource LightChromeForegroundBrush}"
+			RibbonPanelBackgroundBrush="{StaticResource RibbonPanelBackgroundBrush}"
+			RibbonPanelBackgroundGradientBrush="{StaticResource RibbonPanelBackgroundGradientBrush}"
+			RibbonTabRolloverBrush="{StaticResource RibbonTabRolloverBrush}"
+			RibbonPanelSeparatorBrush="{StaticResource RibbonPanelSeparatorBrush}" />
+        <local:ApplicationTheme
+			x:Uid="FullDarkTheme"
+			x:Key="FullDarkTheme"
+			WindowButtonHoverForegroundColor="#FF303030"
+			WindowButtonHoverBackgroundColor="#FFCCEAF9"
+			WindowButtonHoverBorderColor="#FF0160BF"
+			WindowButtonPressedForegroundColor="#FF303030"
+			WindowButtonPressedBackgroundColor="#FFB9D7F3"
+			WindowButtonPressedBorderColor="#FF0160BF"
+			WindowButtonForegroundColor="{StaticResource ChromeForegroundColor_DarkTheme}"
+			WindowButtonBackgroundColor="{StaticResource ChromeBackgroundColor_DarkTheme}"
+			WindowButtonBorderColor="{StaticResource ChromeBackgroundColor_DarkTheme}"
+			ActiveTabBackgroundColor="{StaticResource ActiveTabBackgroundColor}"
+			ActiveTabForegroundColor="{StaticResource ActiveTabForegroundColor}"
+			TabRolloverBackgroundColor="{StaticResource RibbonTabRollOverColor}"
+			SelectedTabRolloverBackgroundColor="{StaticResource SelectedTabRollOverColor}"
+			DisabledTabForegroundColor="{StaticResource DisabledTabForegroundColor}"
+			ChromeBackgroundBrush="{StaticResource ChromeBackgroundBrush_DarkTheme}"
+			ChromeBackgroundGradientBrush="{StaticResource ChromeBackgroundGradientBrush_DarkTheme}"
+			ChromeForegroundBrush="{StaticResource ChromeForegroundBrush_DarkTheme}"
+			RibbonPanelBackgroundBrush="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
+			RibbonPanelBackgroundGradientBrush="{StaticResource RibbonPanelBackgroundGradientBrush_DarkTheme}"
+			RibbonTabRolloverBrush="{StaticResource RibbonTabRolloverBrush_DarkTheme}"
+			RibbonPanelSeparatorBrush="{StaticResource RibbonPanelSeparatorBrush_DarkTheme}"
+			RibbonTheme="{StaticResource FullDarkTheme}" />
+         -->
+    </ResourceDictionary>
+</ResourceDictionary>

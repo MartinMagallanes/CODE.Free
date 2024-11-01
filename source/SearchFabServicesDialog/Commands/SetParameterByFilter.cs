@@ -18,7 +18,7 @@ namespace CODE.Free
         public override void Execute()
         {
             UI.StartTimer();
-            //CheckIn.Hello(this);
+            CheckIn.Hello(this);
             //filter by current view
             Document doc = UiApplication.ActiveUIDocument.Document;
             ElementId viewId = UiApplication.ActiveUIDocument.ActiveGraphicalView.Id;
