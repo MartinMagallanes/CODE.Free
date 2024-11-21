@@ -170,10 +170,7 @@ namespace CODE.Free
                             i = 0;
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        UI.Popup(cmd, $"Error creating filter for service {service.Name}: {ex.Message}");
-                    }
+                    catch { }
                 }
                 activeView.ApplyViewTemplateParameters(template);
                 tr.Commit();
