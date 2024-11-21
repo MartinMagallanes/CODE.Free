@@ -20,7 +20,6 @@ namespace CODE.Free
             CheckIn.Hello(this);
             RevitCommandId cmd3 = RevitCommandId.LookupCommandId("ID_EXPORT_FABRICATION_PCF");
             IDictionary<Guid, Delegate> dic = getBeforeCommandEventDelegate(cmd3.Id);
-            UI.Popup($"dic1 null: {dic == null}");
             foreach (RibbonTab tab in UIFramework.RevitRibbonControl.RibbonControl.Tabs)
             {
                 if (!tab.Title.Contains("Modify"))
@@ -64,12 +63,11 @@ namespace CODE.Free
                                 b.Executed += new EventHandler<ExecutedEventArgs>(B_Executed);
                             }
                             dic = getBeforeCommandEventDelegate(cmd.Id);
-                            UI.Popup($"cmd.id:{cmd.Id}\ndic2 null: {dic == null}");
                             if (dic != null)
                             {
                                 foreach (Guid key in dic.Keys)
                                 {
-                                    UI.Popup($"key: {key}, {dic[key].Method.Name}");
+                                    //UI.Popup($"key: {key}, {dic[key].Method.Name}");
                                 }
                             }
                         }

@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using CODE.Free.Utils;
 #if (REVIT2025)
                         //2025
 #else
@@ -24,6 +25,7 @@ using Binding = System.Windows.Data.Binding;
 using Grid = System.Windows.Controls.Grid;
 using TaskDialog = Autodesk.Revit.UI.TaskDialog;
 using TextBox = System.Windows.Controls.TextBox;
+using System.Runtime.CompilerServices;
 namespace CODE.Free
 {
     /// <summary>
@@ -46,7 +48,7 @@ namespace CODE.Free
         public static bool FabSettingsAutoReload = false;
         public void Update()
         {
-            CheckIn.Hello(this);
+            CheckIn.Hello(this.GetType().FullName, Context.Application.Username);
             FabSettingsAutoReload = CODE.Free.Properties.Settings.Default.FabSettingsAutoReload;
             try
             {
@@ -151,18 +153,6 @@ namespace CODE.Free
             catch (Exception ex)
             {
                 UI.Test(ex.Message);
-            }
-        }
-        public static BitmapSource GetEmbeddedImage(Assembly assem, string name)
-        {
-            try
-            {
-                Stream s = assem.GetManifestResourceStream(name);
-                return BitmapFrame.Create(s);
-            }
-            catch
-            {
-                return null;
             }
         }
         public static BitmapSource GetImageFromPath(string path)
@@ -294,7 +284,7 @@ namespace CODE.Free
                     {
                         FabPartUtility.SimulateButtonClick(sync);
                     }
-                    _fabSettingsDialog.Icon = GetEmbeddedImage(Assembly.GetExecutingAssembly(), "CODE.Free.Resources.Icons.Code Icon.ico");
+                    _fabSettingsDialog.Icon = Assembly.GetExecutingAssembly().GetEmbeddedImage("CODE.Free.Resources.Icons.Code Icon.ico");
                     textBox = new SearchTextBox()
                     {
                         LabelText = _search,
@@ -576,7 +566,7 @@ namespace CODE.Free
                         ToolTip = "Add All",
                         Content = new Image()
                         {
-                            Source = GetEmbeddedImage(Assembly.GetExecutingAssembly(), "CODE.Free.Resources.Icons.AddAll.png"),
+                            Source = Assembly.GetExecutingAssembly().GetEmbeddedImage("CODE.Free.Resources.Icons.AddAll.png"),
                             Stretch = Stretch.None,
                         },
                     };
@@ -602,7 +592,7 @@ namespace CODE.Free
                         ToolTip = "Remove All",
                         Content = new Image()
                         {
-                            Source = GetEmbeddedImage(Assembly.GetExecutingAssembly(), "CODE.Free.Resources.Icons.RemoveAll.png"),
+                            Source = Assembly.GetExecutingAssembly().GetEmbeddedImage("CODE.Free.Resources.Icons.RemoveAll.png"),
                             Stretch = Stretch.None,
                         },
                     };

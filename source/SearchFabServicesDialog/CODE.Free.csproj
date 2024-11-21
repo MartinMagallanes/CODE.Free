@@ -5,7 +5,7 @@
         <LangVersion>latest</LangVersion>
         <PlatformTarget>x64</PlatformTarget>
         <ImplicitUsings>true</ImplicitUsings>
-        <PublishAddinFiles>false</PublishAddinFiles>
+        <PublishAddinFiles>true</PublishAddinFiles>
 		<GenerateDependencyFile>false</GenerateDependencyFile>
 		<Configurations>Release R21;Release R22;Release R23;Release R24;Release R25</Configurations>
         <Configurations>$(Configurations);Release R20;Release R21;Release R22;Release R23;Release R24;Release R25</Configurations>
@@ -44,8 +44,19 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Compile Remove="Commands\AutoHidePanes.cs" />
+      <Compile Remove="Commands\SetParameterByFilter.cs" />
+      <Compile Remove="Commands\Test.cs" />
+      <Compile Remove="Commands\UpdateExportPcf.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
       <None Remove="Resources\Icons\AddAll.png" />
       <None Remove="Resources\Icons\Code Icon.ico" />
+      <None Remove="Resources\Icons\CreateLinesFilters16.png" />
+      <None Remove="Resources\Icons\CreateLinesFilters32.png" />
+      <None Remove="Resources\Icons\CreateSurfacesFilters16.png" />
+      <None Remove="Resources\Icons\CreateSurfacesFilters32.png" />
       <None Remove="Resources\Icons\Refresh.ico" />
       <None Remove="Resources\Icons\RemoveAll.png" />
     </ItemGroup>
@@ -74,11 +85,11 @@
     </ItemGroup>
 	<ItemGroup>
 		<Reference Include="AdWindows">
-		  <HintPath>C:\Program Files\Autodesk\Revit 2021\AdWindows.dll</HintPath>
+		  <HintPath>$(RevitLocation) $(RevitVersion)\AdWindows.dll</HintPath>
 		  <Private>False</Private>
 		</Reference>
 		<Reference Include="Autodesk.UI.Themes">
-		  <HintPath>C:\Program Files\Autodesk\Revit 2024\Autodesk.UI.Themes.dll</HintPath>
+		  <HintPath>$(RevitLocation) $(RevitVersion)\Autodesk.UI.Themes.dll</HintPath>
 		  <Private>False</Private>
 		</Reference>
 		<Reference Include="Autodesk.UI.Windows">
@@ -114,10 +125,25 @@
 		<Reference Include="WindowsFormsIntegration" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Resource Include="Resources\Halloween.xaml" />
+	  <None Include="Commands\AutoHidePanes.cs" />
+	  <None Include="Commands\SetParameterByFilter.cs" />
+	  <None Include="Commands\Test.cs" />
+	  <None Include="Commands\UpdateExportPcf.cs" />
+	  <None Include="Resources\Halloween.xaml">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+	<ItemGroup>
+	  <Resource Include="Resources\Icons\CreateLinesFilters16.png" />
+	  <Resource Include="Resources\Icons\CreateSurfacesFilters16.png" />
+	  <Resource Include="Resources\Icons\CreateLinesFilters32.png" />
+	  <Resource Include="Resources\Icons\CreateSurfacesFilters32.png" />
 	</ItemGroup>
 
     <ItemGroup>
+      <Compile Update="Commands\Halloween.cs">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </Compile>
       <Compile Update="Properties\Settings.Designer.cs">
         <DesignTimeSharedInput>True</DesignTimeSharedInput>
         <AutoGen>True</AutoGen>

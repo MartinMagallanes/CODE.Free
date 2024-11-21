@@ -1,31 +1,12 @@
 ﻿using Autodesk.Revit.UI;
-using Autodesk.Revit.UI.Events;
-using Autodesk.Revit.WPFFramework;
-using Autodesk.UI.Windows.Controls;
-using FabricationPartBrowser;
-using FabricationPartBrowser.Modules;
-using FabricationPartBrowser.ViewModels;
-using FabSettings;
+using CODE.Free.Utils;
 using Nice3point.Revit.Toolkit.External;
-using System.ComponentModel;
-using System.IO;
 using System.Net.Http;
-using System.Reflection;
 using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
 #if (REVIT2025)
 //2025
 #else
-using System.Windows.Interactivity;
 #endif
-using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using Binding = System.Windows.Data.Binding;
-using Grid = System.Windows.Controls.Grid;
-using TextBox = System.Windows.Controls.TextBox;
 
 namespace CODE.Free
 {
@@ -33,11 +14,14 @@ namespace CODE.Free
     public class Application : ExternalApplication
     {
         static string Image => "/CODE.Free;component/Resources/Icons/RibbonIcon16.png";
-        static string LargeImage => "/CODE.Free;component/Resources/Icons/RibbonIcon32.png";
+        static string ImageCreateSurfacesFilters16 => "/CODE.Free;component/Resources/Icons/CreateSurfacesFilters16.png";
+        static string ImageCreateSurfacesFilters32 => "/CODE.Free;component/Resources/Icons/CreateSurfacesFilters32.png";
+        static string ImageCreateLinesFilters16 => "/CODE.Free;component/Resources/Icons/CreateLinesFilters16.png";
+        static string ImageCreateLinesFilters32 => "/CODE.Free;component/Resources/Icons/CreateLinesFilters32.png";
+        static string RibbonIcon32 => "/CODE.Free;component/Resources/Icons/RibbonIcon32.png";
         static string TabName => "CODE";
         public override void OnStartup()
         {
-            CheckIn.Hello(this);
             CreateRibbon();
             new FabSettingsV2().Update();
         }
@@ -58,59 +42,40 @@ namespace CODE.Free
             //    AddInCommandBinding b = UiApplication.CreateAddInCommandBinding(cmd);
             //    if (b != null)
             //    {
-            //        //b.CanExecute += new EventHandler<CanExecuteEventArgs>(B_CanExecute);
-            //        //b.Executed += new EventHandler<ExecutedEventArgs>(B_Executed);
+            //        b.CanExecute += new EventHandler<CanExecuteEventArgs>(B_CanExecute);
+            //        b.Executed += new EventHandler<ExecutedEventArgs>(B_Executed);
             //    }
             //}
 
-            RibbonPanel panel = Application.CreatePanel("Free", TabName);
-            RibbonButton btn = panel.AddPushButton<Halloween>("Halloween\n\rTheme")
-                .SetLargeImage(LargeImage);
-            btn.LongDescription = "Update theme";
+            //RibbonPanel panel = Application.CreatePanel("Free", TabName);
+            //RibbonButton btn = panel.AddPushButton<Halloween>("Halloween\n\rTheme")
+            //    .SetLargeImage(LargeImage);
+            //btn.LongDescription = "Update theme";
+            //RibbonPanel panel = Application.CreatePanel("Free", TabName);
+            //RibbonButton btn = panel.AddPushButton<AutoHidePanes>("Auto-hide\n\r")
+            //    .SetLargeImage(LargeImage);
+            //btn.LongDescription = "Toggle visibility of the auto-hide button for dockable windows like the Properties and Project Browser panes.";
+
+            RibbonPanel fabPanel = Application.CreatePanel("Fabrication", TabName);
+            SplitButton sb = fabPanel.AddSplitButton("createfilters", "Create Filters");
+            sb.IsSynchronizedWithCurrentItem = true;
+            RibbonButton servicesBtn = sb.AddPushButton<CreateFiltersWithLines>("Create Filters\r\nWith Lines")
+                .SetImage(ImageCreateLinesFilters16)
+                .SetLargeImage(ImageCreateLinesFilters32);
+            sb.CurrentButton = servicesBtn as PushButton;
+            servicesBtn.ToolTip = "Create filters overriding line colors for Fabrication services";
+            servicesBtn.LongDescription = "Create filter rules and line color overrides for the Fabrication services loaded in the current project. Optionally create insulation filters with 50% transparency.";
+            RibbonButton servicesBtn2 = sb.AddPushButton<CreateFiltersWithSurfaces>("Create Filters\r\nWith Surfaces")
+                .SetImage(ImageCreateSurfacesFilters16)
+                .SetLargeImage(ImageCreateSurfacesFilters32);
+            servicesBtn2.ToolTip = "Create filters overriding surface colors for Fabrication services";
+            servicesBtn2.LongDescription = "Create filter rules and surface color overrides for the Fabrication services loaded in the current project. Optionally create insulation filters with 50% transparency.";
+
         }
         public override void OnShutdown()
         {
-            CheckIn.Goodbye();
+            this.Goodbye();
             base.OnShutdown();
-        }
-    }
-    internal static class CheckIn
-    {
-        const string _hello = "https://licensing.contentorigin.dev/api/Hello";
-        const string _goodbye = "https://licensing.contentorigin.dev/api/Hello/goodbye";
-        const string _appJson = "application/json";
-        public static List<string> Addins = new List<string>();
-        static HttpClient _client = new HttpClient();
-        public static void Hello(object type)
-        {
-            try
-            {
-                string addin = type.GetType().FullName;
-                if (!Addins.Contains(addin))
-                {
-                    Addins.Add(addin);
-                }
-                _client.PostAsync(_hello, new StringContent(Serialize(Context.Application.Username, addin), Encoding.UTF8, _appJson));
-            }
-            catch { }
-        }
-        public static void Goodbye()
-        {
-            try
-            {
-                foreach (string addin in Addins)
-                {
-                    _client.PostAsync(_goodbye, new StringContent(Serialize(Context.Application.Username, addin), Encoding.UTF8, _appJson));
-                }
-            }
-            catch { }
-        }
-        static string Serialize(string userName, string productId)
-        {
-            return
-            $"{{\"AutodeskUsername\":\"{userName}\"," +
-            $"\"ProductIds\":[\"{productId}\"]," +
-            $"\"ActiveProductIds\":[\"{productId}\"]}}";
         }
     }
 }

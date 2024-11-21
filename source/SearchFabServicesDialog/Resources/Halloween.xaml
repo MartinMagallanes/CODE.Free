@@ -33,9 +33,9 @@
     <Color
 		x:Key="AppButtonPressedBackgroundColor">#ffd199</Color>
     <Color
-		x:Key="ActiveTabBackgroundColor">#FF666666</Color>
+		x:Key="ActiveTabBackgroundColor">#000000</Color>
     <Color
-		x:Key="ActiveTabForegroundColor">#FFFFA336</Color>
+		x:Key="ActiveTabForegroundColor">#FFFFF000</Color>
     <Color
 		x:Key="SelectedTabRollOverColor">#DFFFFFFF</Color>
     <Color
@@ -145,7 +145,7 @@
     <Color
 		x:Key="RibbonButtonActiveBorderColor_DarkTheme">#FF024B6C</Color>
     <Color
-		x:Key="RibbonButtonActiveBackgroundColor_DarkTheme">#FF0584BD</Color>
+		x:Key="RibbonButtonActiveBackgroundColor_DarkTheme">#FF252525</Color>
     <Color
 		x:Key="RibbonButtonRolloverColor_DarkTheme">#FF0696D7</Color>
     <Color
@@ -351,7 +351,7 @@
         <adi:Theme.Ribbon>
             <adi:RibbonTheme
 				x:Uid="DarkTheme_RibbonTheme"
-				PanelBarBackground="{StaticResource ChromeBackgroundGradientBrush_DarkTheme}"
+				PanelBarBackground="GreenYellow"
 				TabBarBorder="{StaticResource ChromeBackgroundBrush_DarkTheme}"
 				TabBarBackground="{StaticResource ChromeBackgroundBrush_DarkTheme}"
 				TabBarBackgroundFloating="{StaticResource ChromeBackgroundBrush_DarkTheme}"
@@ -524,7 +524,7 @@
 		x:Uid="local:RevitThemeDictionary_1">
         <local:ApplicationTheme
 			x:Uid="local:ApplicationTheme_1"
-			x:Key="Dark2"
+			x:Key="Dark3"
 			WindowButtonHoverForegroundColor="#FF303030"
 			WindowButtonHoverBackgroundColor="#FFCCEAF9"
 			WindowButtonHoverBorderColor="#FFCCEAF9"
@@ -535,7 +535,6 @@
 			WindowButtonForegroundColor="{StaticResource DarkChromeForegroundColor}"
 			WindowButtonBackgroundColor="{StaticResource DarkChromeBackgroundColor}"
 			WindowButtonBorderColor="{StaticResource DarkChromeBackgroundColor}"
-			ActiveTabBackgroundColor="{StaticResource ActiveTabBackgroundColor}"
 			ActiveTabForegroundColor="{StaticResource ActiveTabForegroundColor}"
 			TabRolloverBackgroundColor="{StaticResource RibbonTabRollOverColor}"
 			SelectedTabRolloverBackgroundColor="{StaticResource SelectedTabRollOverColor}"
@@ -547,57 +546,5 @@
 			RibbonPanelBackgroundGradientBrush="{StaticResource RibbonPanelBackgroundGradientBrush}"
 			RibbonTabRolloverBrush="{StaticResource RibbonTabRolloverBrush}"
 			RibbonPanelSeparatorBrush="{StaticResource RibbonPanelSeparatorBrush}" />
-        <!--
-        <local:ApplicationTheme
-			x:Uid="local:ApplicationTheme_2"
-			x:Key="Light"
-			WindowButtonHoverForegroundColor="#FF303030"
-			WindowButtonHoverBackgroundColor="#FFC8E9F8"
-			WindowButtonHoverBorderColor="#FF0160BF"
-			WindowButtonPressedForegroundColor="#FF303030"
-			WindowButtonPressedBackgroundColor="#FFBFDAF3"
-			WindowButtonPressedBorderColor="#FF0160BF"
-			RibbonTheme="{x:Static adi:Themes.Light}"
-			WindowButtonForegroundColor="{StaticResource LightChromeForegroundColor}"
-			WindowButtonBackgroundColor="{StaticResource LightChromeBackgroundColor}"
-			WindowButtonBorderColor="{StaticResource LightChromeBackgroundColor}"
-			ActiveTabBackgroundColor="{StaticResource ActiveTabBackgroundColor}"
-			ActiveTabForegroundColor="{StaticResource ActiveTabForegroundColor}"
-			TabRolloverBackgroundColor="{StaticResource RibbonTabRollOverColor}"
-			SelectedTabRolloverBackgroundColor="{StaticResource SelectedTabRollOverColor}"
-			DisabledTabForegroundColor="{StaticResource DisabledTabForegroundColor}"
-			ChromeBackgroundBrush="{StaticResource LightChromeBackgroundBrush}"
-			ChromeBackgroundGradientBrush="{StaticResource LightChromeBackgroundGradientBrush}"
-			ChromeForegroundBrush="{StaticResource LightChromeForegroundBrush}"
-			RibbonPanelBackgroundBrush="{StaticResource RibbonPanelBackgroundBrush}"
-			RibbonPanelBackgroundGradientBrush="{StaticResource RibbonPanelBackgroundGradientBrush}"
-			RibbonTabRolloverBrush="{StaticResource RibbonTabRolloverBrush}"
-			RibbonPanelSeparatorBrush="{StaticResource RibbonPanelSeparatorBrush}" />
-        <local:ApplicationTheme
-			x:Uid="FullDarkTheme"
-			x:Key="FullDarkTheme"
-			WindowButtonHoverForegroundColor="#FF303030"
-			WindowButtonHoverBackgroundColor="#FFCCEAF9"
-			WindowButtonHoverBorderColor="#FF0160BF"
-			WindowButtonPressedForegroundColor="#FF303030"
-			WindowButtonPressedBackgroundColor="#FFB9D7F3"
-			WindowButtonPressedBorderColor="#FF0160BF"
-			WindowButtonForegroundColor="{StaticResource ChromeForegroundColor_DarkTheme}"
-			WindowButtonBackgroundColor="{StaticResource ChromeBackgroundColor_DarkTheme}"
-			WindowButtonBorderColor="{StaticResource ChromeBackgroundColor_DarkTheme}"
-			ActiveTabBackgroundColor="{StaticResource ActiveTabBackgroundColor}"
-			ActiveTabForegroundColor="{StaticResource ActiveTabForegroundColor}"
-			TabRolloverBackgroundColor="{StaticResource RibbonTabRollOverColor}"
-			SelectedTabRolloverBackgroundColor="{StaticResource SelectedTabRollOverColor}"
-			DisabledTabForegroundColor="{StaticResource DisabledTabForegroundColor}"
-			ChromeBackgroundBrush="{StaticResource ChromeBackgroundBrush_DarkTheme}"
-			ChromeBackgroundGradientBrush="{StaticResource ChromeBackgroundGradientBrush_DarkTheme}"
-			ChromeForegroundBrush="{StaticResource ChromeForegroundBrush_DarkTheme}"
-			RibbonPanelBackgroundBrush="{StaticResource RibbonPanelBackgroundBrush_DarkTheme}"
-			RibbonPanelBackgroundGradientBrush="{StaticResource RibbonPanelBackgroundGradientBrush_DarkTheme}"
-			RibbonTabRolloverBrush="{StaticResource RibbonTabRolloverBrush_DarkTheme}"
-			RibbonPanelSeparatorBrush="{StaticResource RibbonPanelSeparatorBrush_DarkTheme}"
-			RibbonTheme="{StaticResource FullDarkTheme}" />
-         -->
     </ResourceDictionary>
 </ResourceDictionary>

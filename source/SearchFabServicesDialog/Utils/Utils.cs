@@ -6,8 +6,12 @@ using System.Windows.Media;
 using System.Windows;
 using System.Reflection;
 using Color = Autodesk.Revit.DB.Color;
+using System.IO;
+using Nice3point.Revit.Toolkit.External;
+using System.Net.Http;
+using System.Text;
 
-namespace CODE.Free
+namespace CODE.Free.Utils
 {
     public static class Extensions
     {
@@ -109,13 +113,18 @@ namespace CODE.Free
             }
             return null;
         }
-        public static FillPatternElement GetSolidPattern(this Document doc)
+        public static bool IsColorTooLightOrDark(this System.Drawing.Color color)
+        {
+            double luminance = 0.2126 * color.R + 0.7152 * color.G + 0.0722 * color.B;
+            return luminance < 60 || luminance > 215;
+        }
+        public static FillPatternElement GetSolidSurfacePattern(this Document doc)
         {
             return new FilteredElementCollector(doc).OfClass(typeof(FillPatternElement)).Cast<FillPatternElement>().FirstOrDefault(x => x.GetFillPattern().IsSolidFill);
         }
         public static OverrideGraphicSettings SetColorInView(this ICollection<ElementId> ids, View view, Color surfaceColor, Color lineColor)
         {
-            FillPatternElement pattern = view.Document.GetSolidPattern();
+            FillPatternElement pattern = view.Document.GetSolidSurfacePattern();
             OverrideGraphicSettings ogs = new OverrideGraphicSettings();
             if (surfaceColor != null)
             {
@@ -133,6 +142,85 @@ namespace CODE.Free
                 view.SetElementOverrides(id, ogs);
             }
             return ogs;
+        }
+        public static BitmapSource GetEmbeddedImage(this Assembly assem, string name)
+        {
+            try
+            {
+                Stream s = assem.GetManifestResourceStream(name);
+                return BitmapFrame.Create(s);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+        public static string LegalizeString(this string str)
+        {
+            if (NamingUtils.IsValidName(str)) return str;
+            char[] illegalChars = @"[\:{}[]|;<>?`~".ToCharArray();
+            foreach (char c in illegalChars)
+            {
+                str = str.Replace(c, '.');
+            }
+            return str;
+        }
+    }
+    public static class CheckIn
+    {
+        const string _hello = "https://licensing.contentorigin.dev/api/Hello";
+        const string _goodbye = "https://licensing.contentorigin.dev/api/Hello/goodbye";
+        const string _appJson = "application/json";
+        public static List<string> Addins = new List<string>();
+        static HttpClient _client = new HttpClient();
+        /// <summary>
+        /// appName is result from type.GetType().FullName
+        /// userName is result from Context.Application.Username
+        /// </summary>
+        /// <param name="appName"></param>
+        /// <param name="userName"></param>
+        public static void Hello(string appName, string userName)
+        {
+            try
+            {
+                if (!Addins.Contains(appName))
+                {
+                    Addins.Add(appName);
+                    _client.PostAsync(_hello, new StringContent(Serialize(userName, appName), Encoding.UTF8, _appJson));
+                }
+            }
+            catch { }
+        }
+        public static void Hello(this ExternalCommand type)
+        {
+            try
+            {
+                string addin = type.GetType().FullName;
+                if (!Addins.Contains(addin))
+                {
+                    Addins.Add(addin);
+                    _client.PostAsync(_hello, new StringContent(Serialize(type.Application.Username, addin), Encoding.UTF8, _appJson));
+                }
+            }
+            catch { }
+        }
+        public static void Goodbye(this ExternalApplication type)
+        {
+            try
+            {
+                foreach (string addin in Addins)
+                {
+                    _client.PostAsync(_goodbye, new StringContent(Serialize(type.UiApplication.Application.Username, addin), Encoding.UTF8, _appJson));
+                }
+            }
+            catch { }
+        }
+        static string Serialize(string userName, string productId)
+        {
+            return
+            $"{{\"AutodeskUsername\":\"{userName}\"," +
+            $"\"ProductIds\":[\"{productId}\"]," +
+            $"\"ActiveProductIds\":[\"{productId}\"]}}";
         }
     }
     public static class UI

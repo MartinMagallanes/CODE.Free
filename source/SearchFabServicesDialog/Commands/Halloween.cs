@@ -1,32 +1,13 @@
 ﻿using Autodesk.Internal.Windows;
 using Autodesk.Internal.Windows.ToolBars;
-using Autodesk.Private.Windows;
 using Autodesk.Revit.Attributes;
 using Autodesk.Windows;
-using FabricationPartBrowser.Modules;
-using FabricationPartBrowser.Properties;
 using Nice3point.Revit.Toolkit.External;
-using System.Collections;
-using System.Drawing.Imaging;
-using System.Reflection;
-using System.Resources;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Ribbon;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Resources;
+using CODE.Free.Utils;
 using UIFramework;
 namespace CODE.Free
 {
-    public static class Themes
-    {
-        public static RibbonTheme defaultRibbonTheme;
-        public static TabTheme defaultTabTheme;
-        public static RibbonTheme halloweenRibbon;
-        public static TabTheme halloweenTabs;
-    }
-
     /// <summary>
     ///     External command entry point invoked from the Revit interface
     /// </summary>
@@ -34,32 +15,45 @@ namespace CODE.Free
     [Transaction(TransactionMode.Manual)]
     public class Halloween : ExternalCommand
     {
-        private RibbonTheme ribbonTheme;
-        private TabTheme tabtheme;
+        static Theme SavedTheme;
+        static RibbonTheme SavedRibbonTheme;
         public override void Execute()
         {
-            //CheckIn.Hello(this);
+            //this.Hello();
             try
             {
                 //Autodesk.Private.Windows.ToolBars.ToolBarTrayControl
                 //Autodesk.Internal.Windows.ToolBars.ToolBarTheme
 
-                Uri uri = new Uri("/CODE.Free;component/Resources/Halloween.xaml", UriKind.Relative);
-                ResourceDictionary halloweenDictionary = (ResourceDictionary)System.Windows.Application.LoadComponent(uri);
-                ResourceDictionary revitThemeDictionary = halloweenDictionary["RevitThemeDictionary2"] as ResourceDictionary;
-                if (revitThemeDictionary != null)
-                {
-                    ApplicationTheme applicationTheme = revitThemeDictionary["Dark2"] as ApplicationTheme;
-                    if (applicationTheme != null)
-                    {
-                        ApplicationTheme.CurrentTheme = applicationTheme;
-                    }
-                }
-                else
-                {
-                    UI.Popup("Failed to load RevitThemeDictionary2.");
-                }
-                
+                //string filePath = @"B:\01-CO\02-Addins\01-CODE\02-Published\CODE.Free\source\SearchFabServicesDialog\Resources\Halloween.xaml";
+                //if (!File.Exists(filePath))
+                //{
+                //    filePath = @"B:\01-CO\02-Addins\01-CODE\02-Published\CODE.Free\source\SearchFabServicesDialog\Resources\Halloween.xaml";
+                //}
+                //if (File.Exists(filePath))
+                //{
+                //    using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                //    {
+                //        ResourceDictionary halloweenDictionary = (ResourceDictionary)XamlReader.Load(fs);
+                //        ResourceDictionary revitThemeDictionary = halloweenDictionary["RevitThemeDictionary2"] as ResourceDictionary;
+                //        if (revitThemeDictionary != null)
+                //        {
+                //            ApplicationTheme applicationTheme = revitThemeDictionary["Dark3"] as ApplicationTheme;
+                //            if (applicationTheme != null)
+                //            {
+                //                ApplicationTheme.CurrentTheme = applicationTheme;
+                //                //ComponentManager.CurrentTheme.Ribbon = applicationTheme.RibbonTheme;
+                //                UI.Popup("Halloween theme applied.");
+                //            }
+                //                UI.Popup("Halloween theme applied2.");
+                //        }
+                //        else
+                //        {
+                //            UI.Popup("Failed to load RevitThemeDictionary2.");
+                //        }
+                //    }
+                //}
+
                 //this.RibbonTheme.Ribbon.PanelBarBackground = this.ChromeBackgroundGradientBrush;
                 //this.RibbonTheme.Ribbon.TabBarBackground = this.ChromeBackgroundBrush;
                 //this.RibbonTheme.Ribbon.TabBarBorder = this.ChromeBackgroundBrush;
@@ -84,6 +78,8 @@ namespace CODE.Free
                 //this.RibbonTheme.Ribbon.MainTab.SlideoutPanelSeparatorColor = Brushes.Transparent;
                 //this.RibbonTheme.ToolbarItem.QuickAccessToolBarItemStyle.LoginTextForeground = this.ChromeForegroundBrush;
 
+                //return;
+
                 System.Windows.Media.Color oldChrome = new System.Windows.Media.Color() { A = 255, R = 153, G = 153, B = 153 };
 
 
@@ -95,21 +91,36 @@ namespace CODE.Free
                 System.Windows.Media.Color fadeOrange = new System.Windows.Media.Color() { A = 50, R = 97, G = 18, B = 155 };
                 System.Windows.Media.Color fadeWhite = new System.Windows.Media.Color() { A = 50, R = 255, G = 255, B = 255 };
                 Brush grayBrush = new SolidColorBrush(gray);
-                Brush darkGrayBrush = new SolidColorBrush(darkGray);
+                Brush darkGrayBrush = new SolidColorBrush(Colors.Red);
                 Brush orangeBrush = new SolidColorBrush(orange);
                 Brush purpleBrush = new SolidColorBrush(purple);
                 Brush fadePurpleBrush = new SolidColorBrush(fadePurple);
                 Brush fadeOrangeBrush = new SolidColorBrush(fadeOrange);
                 Brush fadeWhiteBrush = new SolidColorBrush(fadeWhite);
 
-                ribbonTheme = ComponentManager.CurrentTheme.Ribbon;
+                if (SavedRibbonTheme != null)
+                {
+                    UI.Popup("reloaded");
+                    ComponentManager.CurrentTheme = SavedTheme;
+                    ComponentManager.CurrentTheme.Ribbon = SavedRibbonTheme;
+                    SavedTheme = null;
+                    SavedRibbonTheme = null;
+                    return;
+                }
+                SavedRibbonTheme = ComponentManager.CurrentTheme.Ribbon.CloneCurrentValue() as RibbonTheme;
+                //Autodesk.Windows.ComponentManager at C:\Program Files\Autodesk\Revit 2024\AdWindows.dll
+                SavedTheme = ComponentManager.CurrentTheme.CloneCurrentValue() as Theme;
+                UI.Popup($"savedribbontheme:{SavedRibbonTheme != null}\nsavedtheme:{SavedTheme != null}");
+                RibbonTheme ribbonTheme = ComponentManager.CurrentTheme.Ribbon;
                 ribbonTheme.TabBarBackground = darkGrayBrush;
                 ribbonTheme.TabOverflowArrowIdleBrush = orangeBrush;
-                ribbonTheme.ItemStyle.ActiveButtonBackgroundBrush = darkGrayBrush;
-                ribbonTheme.ItemStyle.ActiveButtonBorderBrush = orangeBrush;
-                ribbonTheme.ItemStyle.RollOverActiveButtonBackgroundBrush = fadePurpleBrush;
-                ribbonTheme.ItemStyle.RollOverActiveButtonBorderBrush = fadeWhiteBrush;
+                ribbonTheme.ItemStyle = new RibbonItemStyle() { ItemStyleProperties = new ItemStyleProperties() };
+                //ribbonTheme.ItemStyle.ActiveButtonBackgroundBrush = darkGrayBrush;
+                //ribbonTheme.ItemStyle.ActiveButtonBorderBrush = orangeBrush;
+                //ribbonTheme.ItemStyle.RollOverActiveButtonBackgroundBrush = fadePurpleBrush;
+                //ribbonTheme.ItemStyle.RollOverActiveButtonBorderBrush = fadeWhiteBrush;
 
+                return;
                 TabTheme mainTabTheme = ribbonTheme.MainTab;
                 mainTabTheme.PanelBackground =
                     new LinearGradientBrush(
@@ -118,6 +129,8 @@ namespace CODE.Free
                             new GradientStop(orange, 1.5) }, 90.0);
                 mainTabTheme.TabHeaderForeground = orangeBrush;
                 mainTabTheme.PanelBorder = Brushes.Transparent;
+                mainTabTheme.PanelTitleBackground = mainTabTheme.PanelContentBackground;
+                mainTabTheme.PanelContentBackground = fadePurpleBrush;
                 //Autodesk.Internal.Windows.Themes.Dark.Ribbon.PanelBarBackground
                 //ComponentManager.CurrentTheme.ri.dark
 
@@ -130,16 +143,16 @@ namespace CODE.Free
                 ComponentManager.FontSettings.ComponentFontFamily = new FontFamily("Josefin Sans");
                 ComponentManager.FontSettings.ComponentFontSize = 12;
                 ApplicationTheme appTheme = UIFramework.ApplicationTheme.CurrentTheme;
-                appTheme.ChromeBorderColor = oldChrome;
+                //appTheme.ChromeBorderColor = oldChrome;
 
                 ToolBarTheme toolBarTheme = ComponentManager.QuickAccessToolBar.Theme;
                 toolBarTheme.CurrentBrush = toolBarTheme.ActiveBrush = darkGrayBrush;
                 toolBarTheme.InactiveBrush = grayBrush;
 
-                ToolBarItemTheme toolBarItemTheme = ComponentManager.CurrentTheme.ToolbarItem;
+                //ToolBarItemTheme toolBarItemTheme = ComponentManager.CurrentTheme.ToolbarItem;
 
                 //rollover doesn't change fg, matches bg to active panel
-                tabtheme = ribbon.ActiveTab.ThemeInternal;
+                TabTheme tabtheme = ribbon.ActiveTab.ThemeInternal;
                 //tabtheme.SelectedTabHeaderForeground = Brushes.Orange;
                 tabtheme.SelectedTabHeaderBorder = orangeBrush;
                 tabtheme.RolloverTabHeaderForeground = Brushes.Green;
