@@ -13,12 +13,12 @@ namespace CODE.Free
     [UsedImplicitly]
     public class Application : ExternalApplication
     {
-        static string Image => "/CODE.Free;component/Resources/Icons/RibbonIcon16.png";
+        static string RibbonIcon16 => "/CODE.Free;component/Resources/Icons/RibbonIcon16.png";
+        static string RibbonIcon32 => "/CODE.Free;component/Resources/Icons/RibbonIcon32.png";
         static string ImageCreateSurfacesFilters16 => "/CODE.Free;component/Resources/Icons/CreateSurfacesFilters16.png";
         static string ImageCreateSurfacesFilters32 => "/CODE.Free;component/Resources/Icons/CreateSurfacesFilters32.png";
         static string ImageCreateLinesFilters16 => "/CODE.Free;component/Resources/Icons/CreateLinesFilters16.png";
         static string ImageCreateLinesFilters32 => "/CODE.Free;component/Resources/Icons/CreateLinesFilters32.png";
-        static string RibbonIcon32 => "/CODE.Free;component/Resources/Icons/RibbonIcon32.png";
         static string TabName => "CODE";
         public override void OnStartup()
         {
@@ -70,6 +70,15 @@ namespace CODE.Free
                 .SetLargeImage(ImageCreateSurfacesFilters32);
             servicesBtn2.ToolTip = "Create filters overriding surface colors for Fabrication services";
             servicesBtn2.LongDescription = "Create filter rules and surface color overrides for the Fabrication services loaded in the current project. Optionally create insulation filters with 50% transparency.";
+
+            //RibbonPanel testPanel = Application.CreatePanel("Test", TabName);
+            //RibbonButton testBtn = testPanel.AddPushButton<Test>("Test")
+            //    .SetImage(RibbonIcon16)
+            //    .SetLargeImage(RibbonIcon32);
+            RibbonPanel settings = Application.CreatePanel("Settings", TabName);
+            RibbonButton cutInBtn = settings.AddPushButton<DisableCutIn>("No Cut-In")
+                .SetImage(RibbonIcon16)
+                .SetLargeImage(RibbonIcon32);
 
         }
         public override void OnShutdown()

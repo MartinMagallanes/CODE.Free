@@ -46,7 +46,6 @@
     <ItemGroup>
       <Compile Remove="Commands\AutoHidePanes.cs" />
       <Compile Remove="Commands\SetParameterByFilter.cs" />
-      <Compile Remove="Commands\Test.cs" />
       <Compile Remove="Commands\UpdateExportPcf.cs" />
     </ItemGroup>
 
@@ -59,6 +58,8 @@
       <None Remove="Resources\Icons\CreateSurfacesFilters32.png" />
       <None Remove="Resources\Icons\Refresh.ico" />
       <None Remove="Resources\Icons\RemoveAll.png" />
+      <None Remove="Resources\Icons\RibbonIcon16.png" />
+      <None Remove="Resources\Icons\RibbonIcon32.png" />
     </ItemGroup>
 
     <ItemGroup>
@@ -96,6 +97,12 @@
 		  <HintPath>$(RevitLocation) $(RevitVersion)\Autodesk.UI.Windows.dll</HintPath>
 		  <Private>False</Private>
 		</Reference>
+		<Reference Include="DevOutput">
+		  <HintPath>C:\Users\Martin Magallanes\AppData\Roaming\Autodesk\Revit\Addins\$(RevitVersion)\DevOutput\DevOutput.dll</HintPath>
+		</Reference>
+		<Reference Include="FabricationAPI">
+		  <HintPath>C:\Program Files\Autodesk\Fabrication 2021\CADmep\FabricationAPI.dll</HintPath>
+		</Reference>
 		<Reference Include="System.Net.Http" />
 		<Reference Include="UIFramework">
 			<HintPath>$(RevitLocation) $(RevitVersion)\UIFramework.dll</HintPath>
@@ -106,6 +113,9 @@
 			<HintPath>$(RevitLocation) $(RevitVersion)\AddIns\FabricationPartBrowser\FabricationPartBrowser.dll</HintPath>
 			<Private>False</Private>
 			<SpecificVersion>False</SpecificVersion>
+		</Reference>
+		<Reference Include="UIFrameworkServices">
+		  <HintPath>C:\Program Files\Autodesk\Revit 2021\UIFrameworkServices.dll</HintPath>
 		</Reference>
 		<Reference Include="UserInterfaceUtility">
 			<HintPath>$(RevitLocation) $(RevitVersion)\UserInterfaceUtility.dll</HintPath>
@@ -127,7 +137,6 @@
 	<ItemGroup>
 	  <None Include="Commands\AutoHidePanes.cs" />
 	  <None Include="Commands\SetParameterByFilter.cs" />
-	  <None Include="Commands\Test.cs" />
 	  <None Include="Commands\UpdateExportPcf.cs" />
 	  <None Include="Resources\Halloween.xaml">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -138,6 +147,8 @@
 	  <Resource Include="Resources\Icons\CreateSurfacesFilters16.png" />
 	  <Resource Include="Resources\Icons\CreateLinesFilters32.png" />
 	  <Resource Include="Resources\Icons\CreateSurfacesFilters32.png" />
+	  <Resource Include="Resources\Icons\RibbonIcon16.png" />
+	  <Resource Include="Resources\Icons\RibbonIcon32.png" />
 	</ItemGroup>
 
     <ItemGroup>

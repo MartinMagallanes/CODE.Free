@@ -10,6 +10,8 @@ using System.IO;
 using Nice3point.Revit.Toolkit.External;
 using System.Net.Http;
 using System.Text;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 
 namespace CODE.Free.Utils
 {
@@ -165,6 +167,24 @@ namespace CODE.Free.Utils
             }
             return str;
         }
+        public static void PerformClick(this ButtonBase sourceButton)
+        {
+            // Check parameters
+            if (sourceButton == null)
+                throw new ArgumentNullException(nameof(sourceButton));
+
+            // 1.) Raise the Click-event
+            sourceButton.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+
+            // 2.) Execute the command, if bound and can be executed
+            ICommand boundCommand = sourceButton.Command;
+            if (boundCommand != null)
+            {
+                object parameter = sourceButton.CommandParameter;
+                if (boundCommand.CanExecute(parameter) == true)
+                    boundCommand.Execute(parameter);
+            }
+        }
     }
     public static class CheckIn
     {
@@ -225,6 +245,8 @@ namespace CODE.Free.Utils
     }
     public static class UI
     {
+        const bool _debugging = true;
+        //const bool _debugging = false;
         private static string AsString(object str)
         {
             string res = "";
@@ -260,10 +282,11 @@ namespace CODE.Free.Utils
         }
         public static void Test(object msg)
         {
-            //if (INI.IsAdmin())
-            //{
-            Popup(msg);
-            //}
+            if (_debugging)
+            {
+                DevOutput.Application._outputWindow.Output += "\n";
+                DevOutput.Application._outputWindow.Output += AsString(msg);
+            }
         }
         public static string Strcat(IEnumerable<string> strs)
         {
