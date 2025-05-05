@@ -1,8 +1,18 @@
-﻿using Autodesk.Revit.UI;
+﻿using Autodesk.Revit.ApplicationServices;
+using Autodesk.Revit.DB.Events;
+using Autodesk.Revit.UI;
+using Autodesk.Windows;
 using CODE.Free.Utils;
 using Nice3point.Revit.Toolkit.External;
 using System.Net.Http;
 using System.Text;
+using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Controls;
+using System.Windows.Media;
+using UIFramework;
+using RibbonButton = Autodesk.Revit.UI.RibbonButton;
+using RibbonPanel = Autodesk.Revit.UI.RibbonPanel;
 #if (REVIT2025)
 //2025
 #else
@@ -59,17 +69,38 @@ namespace CODE.Free
             RibbonPanel fabPanel = Application.CreatePanel("Fabrication", TabName);
             SplitButton sb = fabPanel.AddSplitButton("createfilters", "Create Filters");
             sb.IsSynchronizedWithCurrentItem = true;
-            RibbonButton servicesBtn = sb.AddPushButton<CreateFiltersWithLines>("Create Filters\r\nWith Lines")
+            RibbonButton servicesBtn = sb.AddPushButton<CreateFabFiltersWithLines>("Create Filters\r\nWith Lines")
                 .SetImage(ImageCreateLinesFilters16)
                 .SetLargeImage(ImageCreateLinesFilters32);
-            sb.CurrentButton = servicesBtn as PushButton;
             servicesBtn.ToolTip = "Create filters overriding line colors for Fabrication services";
             servicesBtn.LongDescription = "Create filter rules and line color overrides for the Fabrication services loaded in the current project. Optionally create insulation filters with 50% transparency.";
-            RibbonButton servicesBtn2 = sb.AddPushButton<CreateFiltersWithSurfaces>("Create Filters\r\nWith Surfaces")
+            ((PushButton)servicesBtn).AvailabilityClassName = typeof(CreateFiltersAvailability).FullName;
+            sb.CurrentButton = servicesBtn as PushButton;
+
+            RibbonButton servicesBtn2 = sb.AddPushButton<CreateFabFiltersWithSurfaces>("Create Filters\r\nWith Surfaces")
                 .SetImage(ImageCreateSurfacesFilters16)
                 .SetLargeImage(ImageCreateSurfacesFilters32);
             servicesBtn2.ToolTip = "Create filters overriding surface colors for Fabrication services";
             servicesBtn2.LongDescription = "Create filter rules and surface color overrides for the Fabrication services loaded in the current project. Optionally create insulation filters with 50% transparency.";
+            ((PushButton)servicesBtn2).AvailabilityClassName = typeof(CreateFiltersAvailability).FullName;
+
+            RibbonPanel mepPanel = Application.CreatePanel("MEP", TabName);
+            SplitButton sb2 = mepPanel.AddSplitButton("createfilters", "Create Filters");
+            sb2.IsSynchronizedWithCurrentItem = true;
+            RibbonButton systemsBtn = sb2.AddPushButton<CreateFabFiltersWithLines>("Create Filters\r\nWith Lines")
+                .SetImage(RibbonIcon16)
+                .SetLargeImage(RibbonIcon32);
+            systemsBtn.ToolTip = "Create filters overriding line colors for MEP systems";
+            systemsBtn.LongDescription = "Create filter rules and line color overrides for the MEP systems in the current project. Optionally create insulation filters with 50% transparency.";
+            ((PushButton)systemsBtn).AvailabilityClassName = typeof(CreateFiltersAvailability).FullName;
+            sb2.CurrentButton = systemsBtn as PushButton;
+
+            RibbonButton systemsBtn2 = sb2.AddPushButton<CreateFabFiltersWithSurfaces>("Create Filters\r\nWith Surfaces")
+                .SetImage(RibbonIcon16)
+                .SetLargeImage(RibbonIcon32);
+            systemsBtn2.ToolTip = "Create filters overriding surface colors for MEP systems";
+            systemsBtn2.LongDescription = "Create filter rules and surface color overrides for the MEP systems in the current project. Optionally create insulation filters with 50% transparency.";
+            ((PushButton)systemsBtn2).AvailabilityClassName = typeof(CreateFiltersAvailability).FullName;
 
             //RibbonPanel testPanel = Application.CreatePanel("Test", TabName);
             //RibbonButton testBtn = testPanel.AddPushButton<Test>("Test")
@@ -79,7 +110,6 @@ namespace CODE.Free
             RibbonButton cutInBtn = settings.AddPushButton<DisableCutIn>("No Cut-In")
                 .SetImage(RibbonIcon16)
                 .SetLargeImage(RibbonIcon32);
-
         }
         public override void OnShutdown()
         {

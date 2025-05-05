@@ -91,7 +91,7 @@ namespace CODE.Free
                 System.Windows.Media.Color fadeOrange = new System.Windows.Media.Color() { A = 50, R = 97, G = 18, B = 155 };
                 System.Windows.Media.Color fadeWhite = new System.Windows.Media.Color() { A = 50, R = 255, G = 255, B = 255 };
                 Brush grayBrush = new SolidColorBrush(gray);
-                Brush darkGrayBrush = new SolidColorBrush(Colors.Red);
+                Brush redBrush = new SolidColorBrush(Colors.Green);
                 Brush orangeBrush = new SolidColorBrush(orange);
                 Brush purpleBrush = new SolidColorBrush(purple);
                 Brush fadePurpleBrush = new SolidColorBrush(fadePurple);
@@ -111,8 +111,8 @@ namespace CODE.Free
                 //Autodesk.Windows.ComponentManager at C:\Program Files\Autodesk\Revit 2024\AdWindows.dll
                 SavedTheme = ComponentManager.CurrentTheme.CloneCurrentValue() as Theme;
                 UI.Popup($"savedribbontheme:{SavedRibbonTheme != null}\nsavedtheme:{SavedTheme != null}");
-                RibbonTheme ribbonTheme = ComponentManager.CurrentTheme.Ribbon;
-                ribbonTheme.TabBarBackground = darkGrayBrush;
+                RibbonTheme ribbonTheme = ComponentManager.CurrentTheme.Ribbon; // C:\Program Files\Autodesk\Revit 2024\AdWindows.dll
+                ribbonTheme.TabBarBackground = redBrush;
                 ribbonTheme.TabOverflowArrowIdleBrush = orangeBrush;
                 ribbonTheme.ItemStyle = new RibbonItemStyle() { ItemStyleProperties = new ItemStyleProperties() };
                 //ribbonTheme.ItemStyle.ActiveButtonBackgroundBrush = darkGrayBrush;
@@ -120,33 +120,32 @@ namespace CODE.Free
                 //ribbonTheme.ItemStyle.RollOverActiveButtonBackgroundBrush = fadePurpleBrush;
                 //ribbonTheme.ItemStyle.RollOverActiveButtonBorderBrush = fadeWhiteBrush;
 
-                return;
                 TabTheme mainTabTheme = ribbonTheme.MainTab;
                 mainTabTheme.PanelBackground =
                     new LinearGradientBrush(
                         new GradientStopCollection() {
                             new GradientStop(System.Windows.Media.Colors.Black, 0.2),
                             new GradientStop(orange, 1.5) }, 90.0);
-                mainTabTheme.TabHeaderForeground = orangeBrush;
+                mainTabTheme.TabHeaderForeground = Brushes.Black;
                 mainTabTheme.PanelBorder = Brushes.Transparent;
                 mainTabTheme.PanelTitleBackground = mainTabTheme.PanelContentBackground;
                 mainTabTheme.PanelContentBackground = fadePurpleBrush;
                 //Autodesk.Internal.Windows.Themes.Dark.Ribbon.PanelBarBackground
                 //ComponentManager.CurrentTheme.ri.dark
 
-                Autodesk.Windows.RibbonControl ribbon = RevitRibbonControl.RibbonControl;
+                Autodesk.Windows.RibbonControl ribbon = RevitRibbonControl.RibbonControl;// C:\Program Files\Autodesk\Revit 2024\UIFramework.dll
                 ribbon.ApplicationMenuButtonBackgroundBrush = Brushes.Black;
                 ribbon.ApplicationMenuButtonHoverBackgroundBrush = grayBrush;
-                ribbon.ApplicationMenuButtonPressBackgroundBrush = darkGrayBrush;
+                ribbon.ApplicationMenuButtonPressBackgroundBrush = redBrush;
                 ribbon.ApplicationMenuButtonText = "BOO!";
-                ComponentManager.Settings.CurrentTheme.ApplicationMenu.Foreground = darkGrayBrush;
+                ComponentManager.Settings.CurrentTheme.ApplicationMenu.Foreground = redBrush;
                 ComponentManager.FontSettings.ComponentFontFamily = new FontFamily("Josefin Sans");
                 ComponentManager.FontSettings.ComponentFontSize = 12;
                 ApplicationTheme appTheme = UIFramework.ApplicationTheme.CurrentTheme;
                 //appTheme.ChromeBorderColor = oldChrome;
 
                 ToolBarTheme toolBarTheme = ComponentManager.QuickAccessToolBar.Theme;
-                toolBarTheme.CurrentBrush = toolBarTheme.ActiveBrush = darkGrayBrush;
+                toolBarTheme.CurrentBrush = toolBarTheme.ActiveBrush = redBrush;
                 toolBarTheme.InactiveBrush = grayBrush;
 
                 //ToolBarItemTheme toolBarItemTheme = ComponentManager.CurrentTheme.ToolbarItem;
@@ -154,6 +153,7 @@ namespace CODE.Free
                 //rollover doesn't change fg, matches bg to active panel
                 TabTheme tabtheme = ribbon.ActiveTab.ThemeInternal;
                 //tabtheme.SelectedTabHeaderForeground = Brushes.Orange;
+                tabtheme.SelectedTabHeaderBackground = Brushes.Orange;
                 tabtheme.SelectedTabHeaderBorder = orangeBrush;
                 tabtheme.RolloverTabHeaderForeground = Brushes.Green;
                 //Autodesk.Private.Windows.ToolBars.ToolBarTrayControl

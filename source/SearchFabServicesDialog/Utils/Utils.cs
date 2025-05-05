@@ -120,19 +120,24 @@ namespace CODE.Free.Utils
             double luminance = 0.2126 * color.R + 0.7152 * color.G + 0.0722 * color.B;
             return luminance < 60 || luminance > 215;
         }
-        public static FillPatternElement GetSolidSurfacePattern(this Document doc)
+        public static ElementId GetSolidFillPattern(this Document doc)
         {
-            return new FilteredElementCollector(doc).OfClass(typeof(FillPatternElement)).Cast<FillPatternElement>().FirstOrDefault(x => x.GetFillPattern().IsSolidFill);
+            Element pattern = new FilteredElementCollector(doc).OfClass(typeof(FillPatternElement)).Cast<FillPatternElement>().FirstOrDefault(x => x.GetFillPattern().IsSolidFill);
+            if (pattern == null)
+            {
+                return ElementId.InvalidElementId;
+            }
+            return pattern.Id;
         }
         public static OverrideGraphicSettings SetColorInView(this ICollection<ElementId> ids, View view, Color surfaceColor, Color lineColor)
         {
-            FillPatternElement pattern = view.Document.GetSolidSurfacePattern();
+            ElementId patternId = view.Document.GetSolidFillPattern();
             OverrideGraphicSettings ogs = new OverrideGraphicSettings();
             if (surfaceColor != null)
             {
                 ogs.SetSurfaceForegroundPatternColor(surfaceColor);
                 ogs.SetSurfaceForegroundPatternVisible(true);
-                ogs.SetSurfaceForegroundPatternId(pattern.Id);
+                ogs.SetSurfaceForegroundPatternId(patternId);
             }
             if (lineColor != null)
             {
@@ -184,6 +189,35 @@ namespace CODE.Free.Utils
                 if (boundCommand.CanExecute(parameter) == true)
                     boundCommand.Execute(parameter);
             }
+        }
+        public static XYZ NormalXY(this Line line)
+        {
+            XYZ p = line.GetEndPoint(0);
+            XYZ q = line.GetEndPoint(1);
+            XYZ v = q - p;
+            return v.CrossProduct(XYZ.BasisZ).Normalize();
+        }
+        public static XYZ NormalXZ(this Line line)
+        {
+            XYZ p = line.GetEndPoint(0);
+            XYZ q = line.GetEndPoint(1);
+            XYZ v = q - p;
+            return v.CrossProduct(XYZ.BasisY).Normalize();
+        }
+        public static XYZ NormalYZ(this Line line)
+        {
+            XYZ p = line.GetEndPoint(0);
+            XYZ q = line.GetEndPoint(1);
+            XYZ v = q - p;
+            return v.CrossProduct(XYZ.BasisX).Normalize();
+        }
+        public static bool IsVertical(this XYZ vector)
+        {
+            return vector.CrossProduct(XYZ.BasisZ).IsZeroLength();
+        }
+        public static List<Connector> GetConnectors(this FabricationPart fp)
+        {
+            return fp.ConnectorManager.Connectors.Cast<Connector>().ToList();
         }
     }
     public static class CheckIn

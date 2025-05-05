@@ -22,6 +22,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CODE.Free", "source\SearchF
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug R24|Any CPU = Debug R24|Any CPU
 		Installer|Any CPU = Installer|Any CPU
 		Release R21|Any CPU = Release R21|Any CPU
 		Release R22|Any CPU = Release R22|Any CPU
@@ -30,12 +31,14 @@ Global
 		Release R25|Any CPU = Release R25|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C6B71144-FE67-4EE4-8476-8EFDB33F1233}.Debug R24|Any CPU.ActiveCfg = Debug R24|Any CPU
 		{C6B71144-FE67-4EE4-8476-8EFDB33F1233}.Installer|Any CPU.ActiveCfg = Release|Any CPU
 		{C6B71144-FE67-4EE4-8476-8EFDB33F1233}.Release R21|Any CPU.ActiveCfg = Release|Any CPU
 		{C6B71144-FE67-4EE4-8476-8EFDB33F1233}.Release R22|Any CPU.ActiveCfg = Release|Any CPU
 		{C6B71144-FE67-4EE4-8476-8EFDB33F1233}.Release R23|Any CPU.ActiveCfg = Release|Any CPU
 		{C6B71144-FE67-4EE4-8476-8EFDB33F1233}.Release R24|Any CPU.ActiveCfg = Release|Any CPU
 		{C6B71144-FE67-4EE4-8476-8EFDB33F1233}.Release R25|Any CPU.ActiveCfg = Release|Any CPU
+		{41EFCA73-F289-4AFB-B894-157BBD2E795F}.Debug R24|Any CPU.ActiveCfg = Debug R24|Any CPU
 		{41EFCA73-F289-4AFB-B894-157BBD2E795F}.Installer|Any CPU.ActiveCfg = Release|Any CPU
 		{41EFCA73-F289-4AFB-B894-157BBD2E795F}.Installer|Any CPU.Build.0 = Release|Any CPU
 		{41EFCA73-F289-4AFB-B894-157BBD2E795F}.Release R21|Any CPU.ActiveCfg = Release|Any CPU
@@ -43,6 +46,8 @@ Global
 		{41EFCA73-F289-4AFB-B894-157BBD2E795F}.Release R23|Any CPU.ActiveCfg = Release|Any CPU
 		{41EFCA73-F289-4AFB-B894-157BBD2E795F}.Release R24|Any CPU.ActiveCfg = Release|Any CPU
 		{41EFCA73-F289-4AFB-B894-157BBD2E795F}.Release R25|Any CPU.ActiveCfg = Release|Any CPU
+		{9E41E886-4E80-4EF1-897C-17B3241B4205}.Debug R24|Any CPU.ActiveCfg = Debug R24|Any CPU
+		{9E41E886-4E80-4EF1-897C-17B3241B4205}.Debug R24|Any CPU.Build.0 = Debug R24|Any CPU
 		{9E41E886-4E80-4EF1-897C-17B3241B4205}.Installer|Any CPU.ActiveCfg = Release R21|Any CPU
 		{9E41E886-4E80-4EF1-897C-17B3241B4205}.Release R21|Any CPU.ActiveCfg = Release R21|Any CPU
 		{9E41E886-4E80-4EF1-897C-17B3241B4205}.Release R21|Any CPU.Build.0 = Release R21|Any CPU
