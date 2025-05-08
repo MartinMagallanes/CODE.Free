@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.UI;
 using Autodesk.Windows;
+using CODE.Free.Utils;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -79,16 +80,27 @@ namespace CODE.Free.Models
         {
             try
             {
-                var updatedTabs = new ObservableCollection<RibbonTab>();
-                foreach (var tab in _ribbonControl.Tabs)
+                var existingTabs = new HashSet<string>(RibbonTabs.Select(tab => tab.Name));
+                foreach (var ribbonTab in _ribbonControl.Tabs)
                 {
-                    updatedTabs.Add(new RibbonTab
+                    if (!existingTabs.Contains(ribbonTab.Title))
                     {
-                        Name = tab.Title,
-                        IsVisible = tab.IsVisible
-                    });
+                        RibbonTabs.Add(new RibbonTab
+                        {
+                            Name = ribbonTab.Title,
+                            IsVisible = ribbonTab.IsVisible
+                        });
+                    }
                 }
-                RibbonTabs = updatedTabs;
+
+                var ribbonControlTabNames = _ribbonControl.Tabs.Select(t => t.Title).ToHashSet();
+                for (int i = RibbonTabs.Count - 1; i >= 0; i--)
+                {
+                    if (!ribbonControlTabNames.Contains(RibbonTabs[i].Name))
+                    {
+                        RibbonTabs.RemoveAt(i);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -187,10 +199,43 @@ namespace CODE.Free.Models
         }
     }
 
-    public class RibbonTab
+    public class RibbonTab : INotifyPropertyChanged
     {
-        public string Name { get; set; }
-        public bool IsVisible { get; set; }
+        private string _name;
+        private bool _isVisible;
+
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                if (_name != value)
+                {
+                    _name = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsVisible
+        {
+            get => _isVisible;
+            set
+            {
+                if (_isVisible != value)
+                {
+                    _isVisible = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 
     public class RelayCommand<T> : ICommand

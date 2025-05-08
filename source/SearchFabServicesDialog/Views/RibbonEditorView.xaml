@@ -11,25 +11,27 @@
         <StackPanel Margin="10">
             <TextBlock Text="Ribbon Tab Editor" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10"/>
             <ItemsControl ItemsSource="{Binding RibbonTabs}">
+                <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Margin="5">
-                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Width="150"/>
-                            <Button Content="↑" Command="{Binding DataContext.MoveUpCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Width="30" Margin="5,0"/>
-                            <Button Content="↓" Command="{Binding DataContext.MoveDownCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Width="30" Margin="5,0"/>
-                            <CheckBox
-                                Content="Visible"
-                                IsChecked="{Binding IsVisible}"
-                                Command="{Binding DataContext.ToggleVisibilityCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                CommandParameter="{Binding}"
-                                VerticalAlignment="Center"
-                                Margin="10,0" />
-                            <Button Content="Edit" Command="{Binding DataContext.EditTabCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Width="50" Margin="10,0"/>
+                <DataTemplate>
+                    <Border BorderBrush="Gray" BorderThickness="1" Padding="5" Margin="5">
+                    <StackPanel>
+                        <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                        <CheckBox Content="👁" IsChecked="{Binding IsVisible}" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="5,0,0,0">
+                        <Button Content="Up" Command="{Binding DataContext.MoveUpCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Margin="5,0" />
+                        <Button Content="Down" Command="{Binding DataContext.MoveDownCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Margin="5,0" />
+                        <Button Content="Edit" Command="{Binding DataContext.EditTabCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Margin="5,0" />
                         </StackPanel>
-                    </DataTemplate>
+                    </StackPanel>
+                    </Border>
+                </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="10,0,0,10">
                 <Button
                     Content="Close"

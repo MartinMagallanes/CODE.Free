@@ -110,6 +110,13 @@ namespace CODE.Free
             RibbonButton cutInBtn = settings.AddPushButton<DisableCutIn>("No Cut-In")
                 .SetImage(RibbonIcon16)
                 .SetLargeImage(RibbonIcon32);
+            RibbonPanel ribbonEditorPanel = Application.CreatePanel("Settings", TabName);
+            RibbonButton ribbonEditorButton = ribbonEditorPanel.AddPushButton<RibbonEditor>("Edit Ribbon")
+                .SetImage(RibbonIcon16)
+                .SetLargeImage(RibbonIcon32);
+            ribbonEditorButton.ToolTip = "Open the Ribbon Editor";
+            ribbonEditorButton.LongDescription = "Launch the Ribbon Editor to customize the ribbon layout and settings.";
+            ((PushButton)ribbonEditorButton).AvailabilityClassName = typeof(RibbonEditorAvailability).FullName;
         }
         public override void OnShutdown()
         {
