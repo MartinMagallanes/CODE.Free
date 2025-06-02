@@ -12,6 +12,8 @@ using System.Net.Http;
 using System.Text;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using Point = Autodesk.Revit.DB.Point;
+using Autodesk.Revit.UI.Selection;
 
 namespace CODE.Free.Utils
 {
@@ -56,6 +58,29 @@ namespace CODE.Free.Utils
                 if (child is T t)
                     result.Add(t);
                 result.AddRange(FindChildrenByType<T>(child));
+            }
+            return result;
+        }
+        public static List<T> FindChildrenByType<T>(this DependencyObject parent, bool debug) where T : DependencyObject
+        {
+            var result = new List<T>();
+            if (parent == null)
+                return result;
+            int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
+            UI.Test($"Count:{childrenCount}");
+            for (int i = 0; i < childrenCount; i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if (debug)
+                {
+                    string name = child?.GetType().Name;
+                    string type = child?.GetType().ToString();
+                    string str = $"FindChildrenByType<{typeof(T)}>() - {name} : {type}";
+                    UI.Test(str);
+                }
+                if (child is T t)
+                    result.Add(t);
+                result.AddRange(FindChildrenByType<T>(child, debug));
             }
             return result;
         }
@@ -219,6 +244,66 @@ namespace CODE.Free.Utils
         {
             return fp.ConnectorManager.Connectors.Cast<Connector>().ToList();
         }
+        public static long ToLong(this ElementId id)
+        {
+
+#if (REVIT2020 || REVIT2021 || REVIT2022 || REVIT2023)
+            return id.IntegerValue;
+#else
+            return id.Value;
+#endif
+        }
+        public static ElementId ToElementId(this long id)
+        {
+
+#if (REVIT2020 || REVIT2021 || REVIT2022 || REVIT2023)
+            return new ElementId((int)id);
+#else
+            return new ElementId(id);
+#endif
+        }
+
+        public static List<Point> GetPointReferences(this Element element)
+        {
+
+            // Optionally, skip creation or update the existing DirectShape as needed
+            // Get the geometry of the DirectShape
+            Options options = new Options { ComputeReferences = true, IncludeNonVisibleObjects = true };
+            GeometryElement geomElem = element.get_Geometry(options);
+
+            List<Point> points = new List<Point>();
+
+            // Try to find a ReferencePoint or Point in the geometry
+            foreach (GeometryObject geomObj in geomElem)
+            {
+                if (geomObj is Point point)
+                {
+                    points.Add(point);
+                }
+                else if (geomObj is GeometryInstance instance)
+                {
+                    foreach (GeometryObject instanceObj in instance.GetInstanceGeometry())
+                    {
+                        if (instanceObj is Point pointInInstance)
+                        {
+                            points.Add(pointInInstance);
+                        }
+                    }
+                }
+            }
+            return points;
+        }
+        public static DirectShape CreatePoint(this Document doc, XYZ point, string name)
+        {
+            // Create a new DirectShape
+            DirectShape ds = DirectShape.CreateElement(doc, new ElementId(BuiltInCategory.OST_GenericModel));
+            ds.Name = name;
+            // Create a point geometry
+            Point pointGeom = Point.Create(point);
+            // Add the point geometry to the DirectShape
+            ds.SetShape(new List<GeometryObject>() { pointGeom });
+            return ds;
+        }
     }
     public static class CheckIn
     {
@@ -280,7 +365,7 @@ namespace CODE.Free.Utils
     public static class UI
     {
         const bool _debugging = true;
-        //const bool _debugging = false;
+        // const bool _debugging = false;
         private static string AsString(object str)
         {
             string res = "";
@@ -391,6 +476,38 @@ namespace CODE.Free.Utils
             {
                 return "Stopwatch has not been initialized.";
             }
+        }
+    }
+    public class FabricationPartSelectionFilter : ISelectionFilter
+    {
+        public bool AllowElement(Element elem)
+        {
+            return elem is FabricationPart;
+        }
+
+        public bool AllowReference(Reference reference, XYZ position)
+        {
+            return true;
+        }
+    }
+    public class GeometryPointSelectionFilter : ISelectionFilter
+    {
+        public Document Document { get; set; }
+        public GeometryPointSelectionFilter(Document doc)
+        {
+            Document = doc;
+        }
+        public bool AllowElement(Element elem)
+        {
+            return true;
+        }
+
+        public bool AllowReference(Reference reference, XYZ position)
+        {
+            GeometryElement geo = Document.GetElement(reference).get_Geometry(new Options() { ComputeReferences = true, IncludeNonVisibleObjects = true });
+            GeometryInstance geoInstance = geo.First() as GeometryInstance;
+            IEnumerable<Point> points = geoInstance.GetInstanceGeometry().Where(s => s is Point).Cast<Point>();
+            return reference.ElementReferenceType == ElementReferenceType.REFERENCE_TYPE_NONE && points.Any(p => p.Coord.IsAlmostEqualTo(position));
         }
     }
 }

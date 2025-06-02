@@ -1,7 +1,7 @@
 ﻿using Autodesk.Private.Windows;
 using Autodesk.Revit.Attributes;
-using Autodesk.Revit.DB.Analysis;
 using Autodesk.Revit.UI;
+using Autodesk.Windows;
 using Autodesk.UI.Themes;
 using CODE.Free.Models;
 using CODE.Free.Utils;
@@ -10,8 +10,11 @@ using Nice3point.Revit.Toolkit.External;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Markup;
 using System.Windows.Media;
 using UIFramework;
+using System.Windows.Media.Imaging;
+using System.Windows.Controls.Primitives;
 #if (REVIT2025)
                         //2025
 #else
@@ -22,86 +25,217 @@ namespace CODE.Free
     [Transaction(TransactionMode.Manual)]
     public class RibbonEditor : ExternalCommand
     {
+        Brush orangeBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 163, 54)); // Color #ffa336
         public override void Execute()
         {
 #if RELEASE
             this.Hello();
 #endif
-            // Access the Revit main window
-            var tabs = GetTabs();
-            UI.Test($"tabs:{tabs.Count}");
-            AddEyeToTabs(tabs);
-            RevitRibbonControl ribbonControl = UIFramework.RevitRibbonControl.RibbonControl;
+            // List<Button> tabs = new List<Button>();
+            // var mainWindow = UIFramework.MainWindow.getMainWnd();
+            // var buttons = mainWindow.FindChildrenByType<Button>();
+            // foreach (var button in buttons)
+            // {
+            //     if (button.Name == "mRibbonTabButton")
+            //     {
+            //         // button.Visibility = System.Windows.Visibility.Visible;
+            //     }
+            // }
 
-            ribbonControl.LockMode = Autodesk.Internal.Windows.RibbonLockModes.None;
-            // RibbonEditorViewModel viewModel = new RibbonEditorViewModel();
-            // RibbonEditorView view = new RibbonEditorView(viewModel);
-            // view.Owner = UIFramework.MainWindow.getMainWnd();
-            // view.ShowDialog();
+            // ValidateTabs();
+            // return;
+            var ribbonControl = UIFramework.RevitRibbonControl.RibbonControl;
+            var minimizeButton = ribbonControl.FindChildrenByType<Button>()
+                .FirstOrDefault(b => b.Name == "mMinimizeButtonExecute");
+            if (minimizeButton != null)
+            {
+                // Remove any existing EyeToggleButton with the same name
+                var existingEyeToggleButtons = ribbonControl.FindChildrenByType<ToggleButtonControl>()
+                    .Where(tb => tb.Name == "EyeToggleButton")
+                    .ToList();
+
+                foreach (var existingButton in existingEyeToggleButtons)
+                {
+                    var parent = VisualTreeHelper.GetParent(existingButton) as DockPanel;
+                    if (parent != null)
+                    {
+                        parent.Children.Remove(existingButton);
+                    }
+                }
+                var eyeToggleButton = new ToggleButtonControl
+                {
+                    Name = "EyeToggleButton",
+                    VerticalAlignment = VerticalAlignment.Center,
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    IsTextVisible = true,
+                    Foreground = orangeBrush,
+                    FontSize = 9,
+                    Image = new BitmapImage(new Uri("pack://application:,,,/CODE.Free;component/Resources/Icons/Viewed & Visible-32-Light.png")),
+                };
+
+                eyeToggleButton.Checked += (s, e) =>
+                {
+                    ShowEyes();
+                };
+
+                eyeToggleButton.Unchecked += (s, e) =>
+                {
+                    HideEyes();
+                    HideEyes();
+                };
+
+                var parentPanel = VisualTreeHelper.GetParent(minimizeButton) as DockPanel;
+                if (parentPanel != null)
+                {
+                    var eyeToggleIndex = parentPanel.Children.IndexOf(minimizeButton);
+                    parentPanel.Children.Insert(eyeToggleIndex, eyeToggleButton);
+                }
+            }
+
+            // var tabs = GetTabs();
+            // AddEyeToTabs(tabs);
+            // ribbonControl.LockMode = Autodesk.Internal.Windows.RibbonLockModes.None;
+        }
+        void AddToContextMenu()
+        {
+            var ribbonControl = UIFramework.RevitRibbonControl.RibbonControl;
+            ribbonControl.ContextMenuOpened += (s, e) =>
+            {
+
+                var hideTabMenuItem = new MenuItem
+                {
+                    Header = "Hide Tab",
+                    Foreground = orangeBrush
+                };
+
+                hideTabMenuItem.Click += (sender, args) =>
+                {
+                    // var selectedTab = ribbonControl.SelectedTab;
+                    // if (selectedTab != null)
+                    // {
+                    //     selectedTab.IsVisible = false;
+                    // }
+                };
+
+                if (e.ContextMenu != null)
+                {
+                    e.ContextMenu.Items.Add(new Separator());
+                    e.ContextMenu.Items.Add(hideTabMenuItem);
+                }
+            };
+        }
+        void ValidateTabs()
+        {
+            VisibleFilterHelper.ValidateTabs(RevitRibbonControl.RibbonControl);
+            foreach (var tab in RevitRibbonControl.RibbonControl.Tabs)
+            {
+                if (!CanActivate(tab))
+                {
+                    tab.IsVisible = false;
+                }
+                else
+                {
+                    tab.IsVisible = true;
+                }
+            }
+        }
+        bool CanActivate(RibbonTab tab)
+        {
+            return tab.IsVisible && (!tab.IsContextualTab || !tab.IsMergedContextualTab);
         }
         List<Button> GetTabs()
         {
-            List<Button> tabs = new List<Button>();
             var mainWindow = UIFramework.MainWindow.getMainWnd();
-            var buttons = mainWindow.FindChildrenByType<Button>();
-            foreach (var button in buttons)
+            // Use reflection to access the private method and property
+            var tabList = mainWindow.FindChildrenByType<RibbonTabList>().FirstOrDefault();
+            object overflowPanel = null;
+            if (tabList != null)
             {
-                if (button.Name == "mRibbonTabButton")
+                var method = typeof(RibbonTabList).GetMethod("FindRibbonTabListOverflowPanel", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                if (method != null)
                 {
-                    tabs.Add(button);
+                    overflowPanel = method.Invoke(tabList, null);
                 }
             }
+
+            // Get the private property RibbonTabList from the overflowPanel
+            if (overflowPanel != null)
+            {
+                var prop = overflowPanel.GetType().GetProperty("RibbonTabList", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                var ribbonTabList = prop?.GetValue(overflowPanel);
+                // You can use ribbonTabList as needed here
+            }
+
+            List<Button> tabs = mainWindow.FindChildrenByType<Button>()
+                .Where(c => c.Name == "mRibbonTabButton").ToList();
             return tabs;
         }
-        void AddEyeToTabs(List<Button> tabs)
+        void ShowEyes()
         {
+            ValidateTabs();
+            var tabs = GetTabs();
             foreach (var tab in tabs)
             {
                 if (tab.Visibility == System.Windows.Visibility.Collapsed)
                 {
                     tab.Opacity = 0.5;
-                    tab.Visibility = System.Windows.Visibility.Visible;
                 }
-                // Check if the EyeButton already exists and remove it
-                var existingStackPanel = tab.Content as StackPanel;
-                if (existingStackPanel != null)
+                tab.Visibility = System.Windows.Visibility.Visible;
+                // Check if the EyeButton already exists and show it
+                if (tab.Content is StackPanel stackPanel)
                 {
-                    var eyeButtonToRemove = existingStackPanel.Children
+                    var eyeButton = stackPanel.Children
                         .OfType<Button>()
                         .FirstOrDefault(b => b.Name == "EyeButton");
-                    if (eyeButtonToRemove != null)
+                    if (eyeButton != null)
                     {
-                        existingStackPanel.Children.Remove(eyeButtonToRemove);
+                        stackPanel.Children.Remove(eyeButton);
+                    }
+                    eyeButton = new Button()
+                    {
+                        Name = "EyeButton",
+                        Content = new Image()
+                        {
+                            Source = new BitmapImage(new Uri("pack://application:,,,/CODE.Free;component/Resources/Icons/Viewed & Visible-32-Light.png")),
+                            Width = 16,
+                            Height = 16,
+                        },
+                        FontSize = 12,
+                        Background = System.Windows.Media.Brushes.Transparent,
+                        BorderBrush = System.Windows.Media.Brushes.Transparent,
+                        Foreground = orangeBrush,
+                    };
+                    stackPanel.Children.Add(eyeButton);
+                    eyeButton.Click += EyeButton_Click;
+                }
+            }
+        }
+        void HideEyes()
+        {
+            var tabs = GetTabs();
+            ValidateTabs();
+            foreach (var tab in tabs)
+            {
+                tab.Visibility = tab.Opacity == 1.0 ?
+                    System.Windows.Visibility.Visible :
+                    System.Windows.Visibility.Collapsed;
+                if (tab.Content is StackPanel stackPanel)
+                {
+                    var eyeButton = stackPanel.Children
+                        .OfType<Button>()
+                        .FirstOrDefault(b => b.Name == "EyeButton");
+
+                    if (eyeButton != null)
+                    {
+                        stackPanel.Children.Remove(eyeButton);
+                        // if (stackPanel.Children.Count == 1)
+                        // {
+                        //     var content = stackPanel.Children[0];
+                        //     tab.Content = null;
+                        //     tab.Content = content;
+                        // }
                     }
                 }
-                var eyeButton = new Button()
-                {
-                    Name = "EyeButton",
-                    Content = "\uD83D\uDC41\uFE0F", // Unicode for 👁️
-                    Background = System.Windows.Media.Brushes.Transparent,
-                    BorderBrush = System.Windows.Media.Brushes.Transparent,
-                    Foreground = System.Windows.Media.Brushes.White,
-                };
-                var stackPanel = new StackPanel()
-                {
-                    Orientation = Orientation.Vertical
-                };
-                if (tab.Content is UIElement existingContent)
-                {
-                    try
-                    {
-                        tab.Content = null;
-                        stackPanel.Children.Add(existingContent);
-                    }
-                    catch (Exception ex)
-                    {
-                        UI.Test($"Error adding existing content: {ex.Message}");
-                        return;
-                    }
-                }
-                stackPanel.Children.Add(eyeButton);
-                tab.Content = stackPanel;
-                eyeButton.Click += EyeButton_Click;
             }
         }
         private void EyeButton_Click(object sender, RoutedEventArgs e)
@@ -118,12 +252,10 @@ namespace CODE.Free
                     if (ribbonTabButton.Opacity == 1.0)
                     {
                         ribbonTabButton.Opacity = 0.5;
-                        ribbonTabButton.Visibility = System.Windows.Visibility.Collapsed;
                     }
                     else
                     {
                         ribbonTabButton.Opacity = 1.0;
-                        ribbonTabButton.Visibility = System.Windows.Visibility.Visible;
                     }
                 }
             }
